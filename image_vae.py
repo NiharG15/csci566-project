@@ -156,7 +156,9 @@ class Autoencoder(object):
     def loss(self, imgs):
         # encoded = self.encode2(imgs)
         # recon_imgs = self.decode2(encoded)
-        recon_imgs = self.autoencode(imgs)
+        # recon_imgs = self.autoencode(imgs)
+        encoded, s1, s2, s3, s4 = self.encode_new(imgs)
+        recon_imgs = self.decode_new(encoded, s1, s2, s3, s4)
         n_images = imgs.shape[0]
         # N_0_1 = tfp.distributions.MultivariateNormalDiag(loc=[0.] * self.n_z, scale_diag=[1.] * self.n_z)
         # econ_loss = tf.reduce_mean(tf.pow((imgs - recon_imgs), 2))
@@ -197,7 +199,7 @@ class Autoencoder(object):
         
         return x
     
-    def encode_new(imgs):
+    def encode_new(self, imgs):
         x = tf.layers.conv2d(imgs, filters=32, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
         shape2 = x.shape
         x = tf.layers.max_pooling2d(x, pool_size=2, strides=2)
@@ -210,9 +212,9 @@ class Autoencoder(object):
         x = tf.layers.dense(x, units=256, activation=tf.nn.relu)
         return x, shape_dense, shape_orig, shape1, shape2
     
-    def decode_new(imgs, shape_dense, shape_orig, shape1, shape2):
+    def decode_new(self, encoded, shape_dense, shape_orig, shape1, shape2):
         # Restore from 256 -> 16 * 16 * 64
-        x = tf.layers.dense(x, units=shape_dense[-1], activation=tf.nn.relu)
+        x = tf.layers.dense(encoded, units=shape_dense[-1], activation=tf.nn.relu)
         # Restore from 16 * 16 * 64 -> 16x16x64
         x = tf.reshape(x, [-1, shape_orig[1], shape_orig[2], shape_orig[3]])
         # Conv and upsample layers
