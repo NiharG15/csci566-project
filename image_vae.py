@@ -200,27 +200,27 @@ class Autoencoder(object):
         return x
     
     def encode_new(self, imgs):
-        x = tf.layers.conv2d(imgs, filters=32, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
+        x = tf.layers.conv2d(imgs, filters=32, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu)
         shape2 = x.shape
         x = tf.layers.max_pooling2d(x, pool_size=2, strides=2)
-        x = tf.layers.conv2d(x, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
+        x = tf.layers.conv2d(x, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu)
         shape1 = x.shape
         x = tf.layers.max_pooling2d(x, pool_size=2, strides=2)
         shape_orig = x.shape
         x = tf.layers.flatten(x)
         shape_dense = x.shape
-        x = tf.layers.dense(x, units=256, activation=tf.nn.relu)
+        x = tf.layers.dense(x, units=256, activation=tf.nn.leaky_relu)
         return x, shape_dense, shape_orig, shape1, shape2
     
     def decode_new(self, encoded, shape_dense, shape_orig, shape1, shape2):
         # Restore from 256 -> 16 * 16 * 64
-        x = tf.layers.dense(encoded, units=shape_dense[-1], activation=tf.nn.relu)
+        x = tf.layers.dense(encoded, units=shape_dense[-1], activation=tf.nn.leaky_relu)
         # Restore from 16 * 16 * 64 -> 16x16x64
         x = tf.reshape(x, [-1, shape_orig[1], shape_orig[2], shape_orig[3]])
         # Conv and upsample layers
-        x = tf.layers.conv2d(x, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
+        x = tf.layers.conv2d(x, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu)
         x = tf.image.resize(x, size=(shape1[1], shape1[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-        x = tf.layers.conv2d(x, filters=32, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
+        x = tf.layers.conv2d(x, filters=32, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu)
         x = tf.image.resize(x, size=(shape2[1], shape2[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-        x = tf.layers.conv2d(x, filters=3, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
+        x = tf.layers.conv2d(x, filters=3, kernel_size=3, strides=1, padding='same', activation=tf.nn.sigmoid)
         return x
