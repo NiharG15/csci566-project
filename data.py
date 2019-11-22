@@ -38,6 +38,9 @@ import cv2
 import os
 
 
+from paired_dataset import PairedDataset
+from pathlib import Path
+
 # tf.compat.v1.enable_eager_execution()
 
 PIANO_MIN_MIDI_PITCH = 21
@@ -1330,6 +1333,16 @@ def get_dataset(
       batch_size,
       dataset.output_shapes,
       drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+
+  ### PairedDataset Demo ###
+  # 1. Create these two lists however you want
+  midi_list = os.listdir('/path/to/midi/data')
+  image_list = os.listdir('path/to/images')
+  # 2. Create paired dataset
+  paired = PairedDataset(midi_list, image_list, config, batch_size=16)
+  # 3. the tensorflow dataset is available at paired.ds
+  dataset = paired.ds
+  ### ------------------ ###
 
   return dataset,ds_series_batch
 
