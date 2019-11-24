@@ -29,7 +29,7 @@ class PairedDataset(object):
         img = tf.io.read_file(path)
         img = tf.image.decode_jpeg(img, channels=3)
         img = tf.image.convert_image_dtype(img, tf.float32)
-        return tf.image.resize(img, [160, 120])
+        return tf.image.resize(img, [64, 64])
     
     
     def create_tf_dataset(self):
@@ -47,8 +47,8 @@ class PairedDataset(object):
         ds2 = tf.data.Dataset.from_generator(lambda: iter(self.image_list), output_types=tf.string)
         ds2 = ds2.map(PairedDataset.decode_img)
         
-        self.ds = tf.data.Dataset.zip((ds1.repeat(), ds2.repeat()))
-        self.ds = self.ds.padded_batch(self.bs, self.ds.output_shapes, drop_remainder=True).repeat()
+        self.ds = tf.data.Dataset.zip((ds1, ds2))
+        # self.ds = self.ds.padded_batch(self.bs, self.ds.output_shapes, drop_remainder=True).repeat()
         
     def reset_dataset(self):
       self.create_tf_dataset()

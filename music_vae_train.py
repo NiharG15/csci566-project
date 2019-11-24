@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 
 from magenta.models.music_vae import configs
-from magenta.models.music_vae import data
+import data
 import tensorflow as tf
 
 # tf.compat.v1.enable_eager_execution()
@@ -89,10 +89,10 @@ flags.DEFINE_integer(
 flags.DEFINE_string(
     'eval_dir_suffix', '',
     'Suffix to add to eval output directory.')
-flags.DEFINE_string(
-    'log', 'INFO',
-    'The threshold for what messages will be logged: '
-    'DEBUG, INFO, WARN, ERROR, or FATAL.')
+# flags.DEFINE_string(
+#     'log', 'INFO',
+#     'The threshold for what messages will be logged: '
+#     'DEBUG, INFO, WARN, ERROR, or FATAL.')
 
 
 # Should not be called from within the graph to avoid redundant summaries.
@@ -121,27 +121,27 @@ def _trial_summary(hparams, examples_path, output_dir):
     writer.close()
 
 
-def _get_input_tensors(dataset,image_series, config):
+def _get_input_tensors(dataset, config):
 
   """Get input tensors from dataset."""
   batch_size = config.hparams.batch_size
   iterator = dataset.make_one_shot_iterator()
   (input_sequence, output_sequence, control_sequence,
-   sequence_length) = iterator.get_next()
+   sequence_length), image_input = iterator.get_next()
   input_sequence.set_shape(
       [batch_size, None, config.data_converter.input_depth])
   output_sequence.set_shape(
       [batch_size, None, config.data_converter.output_depth])
 
-  image_iterator = image_series.make_one_shot_iterator()
-  image_input = image_iterator.get_next()
+  # image_iterator = image_series.make_one_shot_iterator()
+  # image_input = image_iterator.get_next()
   if not config.data_converter.control_depth:
     control_sequence = None
   else:
     control_sequence.set_shape(
         [batch_size, None, config.data_converter.control_depth])
   sequence_length.set_shape([batch_size] + sequence_length.shape[1:].as_list())
-  
+
   return {
       'input_sequence': input_sequence,
       'output_sequence': output_sequence,
@@ -176,12 +176,11 @@ def train(train_dir,
       model.build(config.hparams,
                   config.data_converter.output_depth,
                   is_training=True)
-      print(dataset_fn(),'check here')
+      # print(dataset_fn(),'check here')
       # print('this is the output', **_get_input_tensors(**dataset_fn(), config))
-      dataset,image_series = dataset_fn()
-      # print('now what', dataset[0].shape)
-      print(dataset,image_series,'cacacacaca')
-      optimizer = model.train(**_get_input_tensors(dataset,image_series, config))
+      dataset = dataset_fn()
+      print('Dataset: ', dataset)
+      optimizer = model.train(**_get_input_tensors(dataset, config))
       # optimizer = model.train(**_get_input_tensors(dataset_fn(), config))
 
       hooks = []

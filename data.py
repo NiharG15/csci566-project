@@ -365,7 +365,8 @@ class BaseConverter(object):
       return self._to_items(samples)
     else:
       return self._to_items(samples, controls)
-
+  
+  @tf.autograph.experimental.do_not_convert
   def tf_to_tensors(self, item_scalar):
     """TensorFlow op that converts item into output tensors.
 
@@ -1218,133 +1219,109 @@ def get_dataset(
     ValueError: If no files match examples path.
   """
 
-  def image_gen(img_paths):
-    # Iterate over all the image paths
-    images = []
-    i = 0
-    for img_path in img_paths:
-        print(img_path)
-        img = cv2.imread(img_path) / 255.
-        img = cv2.resize(img, (320, 240))
-        images.append(img)
-        i+=1
-        #if i == 3:
-        #    break
-        # yield img
-    return images
-
-  def gen(images):
-    
-    i = 0
-    while True:
-      ind = np.random.randint(low=0, high=len(images))
-      image = images[ind]
-      yield image
-
-  batch_size = config.hparams.image_batch_size
+  # batch_size = config.hparams.image_batch_size
 #   if is_training:
 #       ipath = config.train_image_path
 #   else:
 #       ipath = config.eval_image_path
 #   print(ipath)
-  ipath = '/home/niharg/magenta/magenta/GAPED/GAPED/480x640'
-  img_paths = [os.path.join(ipath,f) for f in os.listdir(ipath)]
+  # ipath = '/home/niharg/Documents/MS/Fall 2019/CSCI566/mario/data/GAPED_2/GAPED/GAPED_jpeg_all'
+
+  # img_paths = [os.path.join(ipath,f) for f in os.listdir(ipath)]
 
 
 
-  images = np.array(image_gen(img_paths))
+  # images = np.array(image_gen(img_paths))
 
 
-  ds = tf.data.Dataset.from_generator(lambda : gen(images),output_types=tf.float32,output_shapes=(240, 320, 3))
-  image_batch_size = config.hparams.image_batch_size
-  ds_series_batch = ds.batch(image_batch_size)
+  # ds = tf.data.Dataset.from_generator(lambda : gen(images),output_types=tf.float32,output_shapes=(120, 160, 3))
+  # image_batch_size = config.hparams.image_batch_size
+  # ds_series_batch = ds.batch(image_batch_size)
   # batch_img = next(iter(ds_series_batch))
 
   
-
-
   batch_size = config.hparams.batch_size
-  examples_path = (
-      config.train_examples_path if is_training else config.eval_examples_path)
-  image_path = (
-      config.train_image_path if is_training else config.eval_image_path)
-  # print('what the hell',image_path)
-  note_sequence_augmenter = (
-      config.note_sequence_augmenter if is_training else None)
-  data_converter = config.data_converter
-  data_converter.set_mode('train' if is_training else 'eval')
+  # examples_path = (
+  #     config.train_examples_path if is_training else config.eval_examples_path)
+  # note_sequence_augmenter = (
+  #     config.note_sequence_augmenter if is_training else None)
+  # data_converter = config.data_converter
+  # data_converter.set_mode('train' if is_training else 'eval')
 
-  # batch_img = data_preprocessing.image_batch_generator(config,is_training)
+  # if examples_path:
+  #   tf.logging.info('Reading examples from file: %s', examples_path)
+  #   num_files = len(tf.gfile.Glob(examples_path))
+  #   if not num_files:
+  #     raise ValueError(
+  #         'No files were found matching examples path: %s' %  examples_path)
+  #   files = tf.data.Dataset.list_files(examples_path)
+  #   dataset = files.apply(
+  #       tf.contrib.data.parallel_interleave(
+  #           tf_file_reader,
+  #           cycle_length=num_threads,
+  #           sloppy=is_training))
+  # elif config.tfds_name:
+  #   tf.logging.info('Reading examples from TFDS: %s', config.tfds_name)
+  #   dataset = tfds.load(
+  #       config.tfds_name,
+  #       split=tfds.Split.TRAIN if is_training else tfds.Split.VALIDATION,
+  #       shuffle_files=is_training,
+  #       try_gcs=True)
+  #   def _tf_midi_to_note_sequence(ex):
+  #     return tf.py_function(
+  #         lambda x: [mm.midi_to_note_sequence(x.numpy()).SerializeToString()],
+  #         inp=[ex['midi']],
+  #         Tout=tf.string,
+  #         name='midi_to_note_sequence')
+  #   dataset = dataset.map(
+  #       _tf_midi_to_note_sequence,
+  #       num_parallel_calls=tf.data.experimental.AUTOTUNE)
+  # else:
+  #   raise ValueError(
+  #       'One of `config.examples_path` or `config.tfds_name` must be defined.')
 
-  if examples_path:
-    tf.logging.info('Reading examples from file: %s', examples_path)
-    num_files = len(tf.gfile.Glob(examples_path))
-    if not num_files:
-      raise ValueError(
-          'No files were found matching examples path: %s' %  examples_path)
-    files = tf.data.Dataset.list_files(examples_path)
-    dataset = files.apply(
-        tf.contrib.data.parallel_interleave(
-            tf_file_reader,
-            cycle_length=num_threads,
-            sloppy=is_training))
-  elif config.tfds_name:
-    tf.logging.info('Reading examples from TFDS: %s', config.tfds_name)
-    dataset = tfds.load(
-        config.tfds_name,
-        split=tfds.Split.TRAIN if is_training else tfds.Split.VALIDATION,
-        shuffle_files=is_training,
-        try_gcs=True)
-    def _tf_midi_to_note_sequence(ex):
-      return tf.py_function(
-          lambda x: [mm.midi_to_note_sequence(x.numpy()).SerializeToString()],
-          inp=[ex['midi']],
-          Tout=tf.string,
-          name='midi_to_note_sequence')
-    dataset = dataset.map(
-        _tf_midi_to_note_sequence,
-        num_parallel_calls=tf.data.experimental.AUTOTUNE)
-  else:
-    raise ValueError(
-        'One of `config.examples_path` or `config.tfds_name` must be defined.')
+  # def _remove_pad_fn(padded_seq_1, padded_seq_2, padded_seq_3, length):
+  #   if length.shape.ndims == 0:
+  #     return (padded_seq_1[0:length], padded_seq_2[0:length],
+  #             padded_seq_3[0:length], length)
+  #   else:
+  #     # Don't remove padding for hierarchical examples.
+  #     return padded_seq_1, padded_seq_2, padded_seq_3, length
 
-  def _remove_pad_fn(padded_seq_1, padded_seq_2, padded_seq_3, length):
-    if length.shape.ndims == 0:
-      return (padded_seq_1[0:length], padded_seq_2[0:length],
-              padded_seq_3[0:length], length)
-    else:
-      # Don't remove padding for hierarchical examples.
-      return padded_seq_1, padded_seq_2, padded_seq_3, length
+  # if note_sequence_augmenter is not None:
+  #   dataset = dataset.map(note_sequence_augmenter.tf_augment)
+  # dataset = (dataset
+  #            .map(data_converter.tf_to_tensors,
+  #                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
+  #            .flat_map(lambda *t: tf.data.Dataset.from_tensor_slices(t))
+  #            .map(_remove_pad_fn,
+  #                 num_parallel_calls=tf.data.experimental.AUTOTUNE))
+  # if cache_dataset:
+  #   dataset = dataset.cache()
+  # if is_training:
+  #   dataset = dataset.shuffle(buffer_size=10 * batch_size).repeat()
 
-  if note_sequence_augmenter is not None:
-    dataset = dataset.map(note_sequence_augmenter.tf_augment)
-  dataset = (dataset
-             .map(data_converter.tf_to_tensors,
-                  num_parallel_calls=tf.data.experimental.AUTOTUNE)
-             .flat_map(lambda *t: tf.data.Dataset.from_tensor_slices(t))
-             .map(_remove_pad_fn,
-                  num_parallel_calls=tf.data.experimental.AUTOTUNE))
-  if cache_dataset:
-    dataset = dataset.cache()
-  if is_training:
-    dataset = dataset.shuffle(buffer_size=10 * batch_size).repeat()
-
-  dataset = dataset.padded_batch(
-      batch_size,
-      dataset.output_shapes,
-      drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+  # dataset = dataset.padded_batch(
+  #     batch_size,
+  #     dataset.output_shapes,
+  #     drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
 
   ### PairedDataset Demo ###
   # 1. Create these two lists however you want
-  midi_list = os.listdir('/path/to/midi/data')
-  image_list = os.listdir('path/to/images')
-  # 2. Create paired dataset
-  paired = PairedDataset(midi_list, image_list, config, batch_size=16)
-  # 3. the tensorflow dataset is available at paired.ds
+  midi_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Metallica/').glob('*.mid')))
+  image_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/magenta/magenta/GAPED/GAPED/Sn_j/').glob('*.jpg')))
+  print('Found midis: ', len(midi_list))
+  print('Found images: ', len(image_list))
+  # # 2. Create paired dataset
+  paired = PairedDataset(midi_list, image_list, config, batch_size=64)
+  # # 3. the tensorflow dataset is available at paired.ds
   dataset = paired.ds
-  ### ------------------ ###
-
-  return dataset,ds_series_batch
+  # ### ------------------ ###
+  dataset = dataset.cache().shuffle(10 * batch_size).repeat()
+  dataset = dataset.padded_batch(batch_size,
+   dataset.output_shapes,
+    drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+  return dataset  #, ds_series_batch
 
 
 class GrooveConverter(BaseNoteSequenceConverter):

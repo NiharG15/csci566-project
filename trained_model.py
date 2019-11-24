@@ -70,7 +70,18 @@ class TrainedModel(object):
           self._config.hparams,
           self._config.data_converter.output_depth,
           is_training=False)
-      self.vae = model.vae
+      self.ae = model.ae
+      self.shared_z = model.shared_z
+      # Force all layers to be created.
+      # model._compute_model_loss(
+      #   input_sequence=np.random.randint(low=0, high=2, size=(2, 32, 90)).astype(np.bool),
+      #   output_sequence=np.random.randint(low=0, high=2, size=(2, 32, 90)).astype(np.bool),
+      #   sequence_length=np.array([32, 32]).astype(np.int32),
+      #   control_sequence=None,
+      #   image_input=np.random.normal(size=(2, 64, 64, 3)).astype(np.float32)
+      # )
+      # dist, *shapes = self.ae.encode_var_new(np.random.normal(size=(2, 64, 64, 3)).astype(np.float32))
+      # self.ae.decode_var_new(dist.sample(), *shapes)
       #img = np.random.normal(size=(1, 240, 320, 3)).astype(np.float32)
       # data = tf.data.Dataset.from_tensors(img).make_one_shot_iterator().get_next()
       # self.vae.encode(data, config.hparams) # Actually create the model and add it to computation graph
@@ -113,6 +124,13 @@ class TrainedModel(object):
         self._mu = q_z.loc
         self._sigma = q_z.scale.diag
         self._z = q_z.sample()
+
+      self.image_input = tf.placeholder(tf.float32, shape=(None, 64, 64, 3))
+      dist, *shapes = self.ae.encode_var_new(self.image_input)
+      self.image_z = self.shared_z(dist.sample())
+      self.latent_input = tf.placeholder(tf.float32, shape=(None, 256))
+      self.image_recons = self.ae.decode_var_new(self.latent_input, *shapes)
+      self.pass_thr_shared = self.shared_z(self.latent_input)
 
       var_map = None
       if var_name_substitutions is not None:
@@ -398,3 +416,34 @@ class TrainedModel(object):
         length=length,
         z=z,
         temperature=temperature)
+
+
+  def encode_images(self, image_input):
+    image_z = self._sess.run(self.image_z, feed_dict={self.image_input: image_input})
+    return image_z
+
+  def decode_imgs(self, z):
+    image_recons = self._sess.run(self.image_recons, feed_dict={self.latent_input: z})
+    return image_recons
+    
+  def encode_music_shared(self, note_sequences):
+    z, mu, sigma = self.encode(note_sequences)
+    z = self._sess.run(self.pass_thr_shared, feed_dict={self.latent_input: z})
+    return z
+
+  def image_to_music(self, image_input):
+    """
+      Encodes image using the autoencoder and uses it's latent z
+       to generate music.
+    """
+    image_dist, *shapes = self.ae.encode_var_new(image_input)
+    image_z = image_dist.sample()
+    print(image_z.graph, self._sess.graph)
+    return self.decode(image_z.eval(session=self._sess), length=self._config.hparams.max_seq_len)
+  
+  def music_to_image(self, input_sequence, input_lengths):
+    """
+      Encodes music using musicVAE encoder, passes it through the image decoder
+      and returns the image batches.
+    """
+    pass

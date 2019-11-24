@@ -32,8 +32,7 @@ from tensorflow.contrib.slim import fully_connected as fc
 from tensorflow.contrib.slim import conv2d
 import matplotlib.pyplot as plt 
 
-from image_vae import VariationalAutoencoder as VAE
-
+from image_vae import Autoencoder
 
 
 
@@ -175,7 +174,10 @@ class MusicVAE(object):
     self._hparams = hparams
     self._encoder.build(hparams, is_training)
     self._decoder.build(hparams, output_depth, is_training)
-    self.vae = VAE(batch_size = hparams.image_batch_size, n_z = hparams.z_size)
+    self.ae = Autoencoder()
+    self.ae.build_var()
+    with tf.variable_scope('shared_layers', reuse=tf.AUTO_REUSE):
+      self.shared_z = tf.layers.Dense(units=256, activation=tf.nn.leaky_relu, name='shared_z')
 
   @property
   def encoder(self):
@@ -231,15 +233,15 @@ class MusicVAE(object):
         name='encoder/sigma',
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
 
-    eps = tf.random_normal(
-            shape=tf.shape(sigma),
-            mean=0, stddev=1, dtype=tf.float32)
+    # eps = tf.random_normal(
+    #         shape=tf.shape(sigma),
+    #         mean=0, stddev=1, dtype=tf.float32)
 
     # return mu,sigma# + tf.sqrt(tf.exp(sigma)) * eps
     return ds.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
 
   def _compute_model_loss(
-      self, input_sequence, output_sequence, sequence_length, control_sequence,image_input):
+      self, input_sequence, output_sequence, sequence_length, control_sequence, image_input, summary=True):
     """Builds a model with loss for train/eval."""
     hparams = self.hparams
     batch_size = hparams.batch_size
@@ -271,62 +273,74 @@ class MusicVAE(object):
       # print('lalalala', input_sequence)
       music_qz = self.encode(input_sequence, x_length, control_sequence)
       # print(mu_music,sigma_music)
-      image_dist = self.vae.encode2(image_input)
+      image_dist, *shapes = self.ae.encode_var_new(image_input)
       mu_image = image_dist.loc
       sigma_image = image_dist.scale.diag
 
-      ### Image Reconstruction Loss Beg ###
 
-      image_latent_sample = image_dist.sample()
-      image_recons = self.vae.decode2(image_latent_sample)
-      image_recon_loss = tf.nn.l2_loss(image_input - image_recons)
-      ### Image Reconstruction Loss End ###
+      # 1. Pass Music through encoder
+      # 2. Pass image through encoder
+      # 3. Pass result of image encoder through music decoder
+      # 4. Pass result of music encoder through image decoder
+      # TODO: Try adding image to image and music to music loss.
 
-      # print(int(hparams.batch_size/hparams.image_batch_size,'xaxaxaxaxa'))
 
-      # for i in range(int(int(hparams.batch_size)/int(hparams.image_batch_size))):
-      #   if i == 0:
-      #     sigma_image_final = sigma_image
-      #     mu_image_final = mu_image
+      # factor = hparams.batch_size // hparams.image_batch_size
+      # mu_image_final = tf.tile(mu_image, [factor, 1])
+      # sigma_image_final = tf.tile(sigma_image, [factor, 1])
 
-      #   else:
-      #     sigma_image_final = tf.concat([sigma_image_final,sigma_image],axis=0)
-      #     mu_image_final = tf.concat([mu_image_final,mu_image],axis=0)
-
-      factor = hparams.batch_size // hparams.image_batch_size
-      mu_image_final = tf.tile(mu_image, [factor, 1])
-      sigma_image_final = tf.tile(sigma_image, [factor, 1])
-
+      if summary:
+        tf.summary.image('input_midi', tf.expand_dims(input_sequence, axis=-1), max_outputs=6)
+        tf.summary.image('input_images', image_input, max_outputs=5)
       mu_music, sigma_music = music_qz.loc, music_qz.scale.diag
-      mu = tf.math.add(mu_music, mu_image_final)
-      sigma = tf.math.add(sigma_music, sigma_image_final)
-      # print(mu.shape, sigma.shape)
-      q_z = ds.MultivariateNormalDiag(loc=mu, scale_diag=sigma)
       
       
-      z = q_z.sample()
+      music_z = music_qz.sample()
+      image_z = image_dist.sample()
+
+      # print(music_z.shape)
+      # print(image_z.shape)
+      # print(x_input.shape, x_target.shape, sequence_length.shape)
 
       # Prior distribution.
       p_z = ds.MultivariateNormalDiag(
           loc=[0.] * hparams.z_size, scale_diag=[1.] * hparams.z_size)
 
       # KL Divergence (nats)
-      kl_div = ds.kl_divergence(q_z, p_z)
-
+      kl_div = ds.kl_divergence(music_qz, p_z)
+      kl_div_img = ds.kl_divergence(image_dist, p_z)
       # Concatenate the Z vectors to the inputs at each time step.
     else:  # unconditional, decoder-only generation
       kl_div = tf.zeros([batch_size, 1], dtype=tf.float32)
       z = None
 
+    stacked_z = tf.concat((image_z, music_z), axis=0)
+    # print(stacked_z.shape)
+    stacked_z_out = self.shared_z(stacked_z)    # , units=256, activation=tf.nn.leaky_relu, name='shared_z')
+    # print(stacked_z_out.shape)
+    image_z, music_z = tf.split(stacked_z_out, num_or_size_splits=2, axis=0)
+    # print(music_z.shape)
+    # print(image_z.shape)
     r_loss, metric_map = self.decoder.reconstruction_loss(
-        x_input, x_target, x_length, z, control_sequence)[0:2]
+        x_input, x_target, x_length, image_z, control_sequence)[0:2]
+
+    ## Image Reconstruction Loss through music
+    recon_imgs = self.ae.decode_var_new(music_z, *shapes)
+    if summary:
+      tf.summary.image('recon_images', recon_imgs, max_outputs=6)
+    flat_imgs = tf.reshape(image_input, (tf.shape(image_input)[0], -1))
+    flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
+
+    recon_loss = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs, 2), axis=1)
+    recon_loss = tf.reduce_mean(recon_loss)
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
     kl_cost = tf.maximum(kl_div - free_nats, 0)
 
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
-    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + image_recon_loss
+    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss + tf.reduce_mean(kl_div_img)
+
 
     scalars_to_summarize = {
         'loss': self.loss,
@@ -334,6 +348,8 @@ class MusicVAE(object):
         'losses/kl_loss': kl_cost,
         'losses/kl_bits': kl_div / tf.math.log(2.0),
         'losses/kl_beta': beta,
+        'losses/image_recon_loss': recon_loss,
+        'losses/image_kl_div': kl_div_img
     }
     return metric_map, scalars_to_summarize
 
