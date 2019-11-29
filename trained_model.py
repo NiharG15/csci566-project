@@ -418,11 +418,11 @@ class TrainedModel(object):
         temperature=temperature)
 
 
-  def encode_images(self, image_input):
+  def encode_images_shared(self, image_input):
     image_z = self._sess.run(self.image_z, feed_dict={self.image_input: image_input})
     return image_z
 
-  def decode_imgs(self, z):
+  def decode_to_imgs(self, z):
     image_recons = self._sess.run(self.image_recons, feed_dict={self.latent_input: z})
     return image_recons
     
@@ -434,16 +434,16 @@ class TrainedModel(object):
   def image_to_music(self, image_input):
     """
       Encodes image using the autoencoder and uses it's latent z
-       to generate music.
+       to generate music as NoteSequence objects.
     """
-    image_dist, *shapes = self.ae.encode_var_new(image_input)
-    image_z = image_dist.sample()
-    print(image_z.graph, self._sess.graph)
-    return self.decode(image_z.eval(session=self._sess), length=self._config.hparams.max_seq_len)
+    image_z = self.encode_images_shared(image_input)
+    return self.decode(image_z, length=self._config.hparams.max_seq_len)
   
-  def music_to_image(self, input_sequence, input_lengths):
+  def music_to_image(self, note_sequences):
     """
-      Encodes music using musicVAE encoder, passes it through the image decoder
+      Encodes music using MusicVAE encoder, passes it through the shared net and image decoder
       and returns the image batches.
     """
-    pass
+    music_z = self.encode_music_shared(note_sequences)
+    imgs = self.decode_to_imgs(music_z)
+    return imgs
