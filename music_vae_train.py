@@ -220,7 +220,7 @@ def train(train_dir,
 
       scaffold = tf.train.Scaffold(
           saver=tf.train.Saver(
-              max_to_keep=checkpoints_to_keep,
+              max_to_keep=50,
               keep_checkpoint_every_n_hours=keep_checkpoint_every_n_hours))
       tf.contrib.training.train(
           train_op=train_op,
@@ -228,6 +228,7 @@ def train(train_dir,
           scaffold=scaffold,
           hooks=hooks,
           save_checkpoint_secs=60,
+          save_summaries_steps=20,
           master=master,
           is_chief=is_chief)
 
