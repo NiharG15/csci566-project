@@ -40,6 +40,7 @@ import os
 
 from paired_dataset import PairedDataset
 from pathlib import Path
+import pandas as pd
 
 # tf.compat.v1.enable_eager_execution()
 
@@ -1218,28 +1219,6 @@ def get_dataset(
   Raises:
     ValueError: If no files match examples path.
   """
-
-  # batch_size = config.hparams.image_batch_size
-#   if is_training:
-#       ipath = config.train_image_path
-#   else:
-#       ipath = config.eval_image_path
-#   print(ipath)
-  # ipath = '/home/niharg/Documents/MS/Fall 2019/CSCI566/mario/data/GAPED_2/GAPED/GAPED_jpeg_all'
-
-  # img_paths = [os.path.join(ipath,f) for f in os.listdir(ipath)]
-
-
-
-  # images = np.array(image_gen(img_paths))
-
-
-  # ds = tf.data.Dataset.from_generator(lambda : gen(images),output_types=tf.float32,output_shapes=(120, 160, 3))
-  # image_batch_size = config.hparams.image_batch_size
-  # ds_series_batch = ds.batch(image_batch_size)
-  # batch_img = next(iter(ds_series_batch))
-
-  
   batch_size = config.hparams.batch_size
   # examples_path = (
   #     config.train_examples_path if is_training else config.eval_examples_path)
@@ -1308,19 +1287,71 @@ def get_dataset(
 
   ### PairedDataset Demo ###
   # 1. Create these two lists however you want
-  midi_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Metallica/').glob('*.mid')))
-  image_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/magenta/magenta/GAPED/GAPED/Sn_j/').glob('*.jpg')))
-  print('Found midis: ', len(midi_list))
-  print('Found images: ', len(image_list))
-  # # 2. Create paired dataset
-  paired = PairedDataset(midi_list, image_list, config, batch_size=64)
-  # # 3. the tensorflow dataset is available at paired.ds
-  dataset = paired.ds
+  # midi_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Metallica/').glob('*.mid')))
+  # image_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/magenta/magenta/GAPED/GAPED/Sn_j/').glob('*.jpg')))
+  # print('Found midis: ', len(midi_list))
+  # print('Found images: ', len(image_list))
+  # # # 2. Create paired dataset
+  # paired = PairedDataset(midi_list, image_list, config, max_tensors_per_midi=15)
+  # # # 3. the tensorflow dataset is available at paired.ds
+  # dataset1 = paired.ds.apply(tf.data.experimental.ignore_errors())
+
+  # midi_list2 = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Elton John/').glob('*.mid')))
+  # image_list2 = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/magenta/magenta/GAPED/GAPED/P_j/').glob('*.jpg')))
+  # paired2 = PairedDataset(midi_list2, image_list2, config, max_tensors_per_midi = 15)
+  # dataset2 = paired2.ds.apply(tf.data.experimental.ignore_errors())
+
+  # midi_pos = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/MIDI/Positive').glob('*.mid')))
+  # image_pos = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/GAPED/Positive').glob('*.jpg')))
+  # paired_pos = PairedDataset(midi_pos, image_pos, config, max_tensors_per_midi = 10)
+  # dataset_pos = paired_pos.ds.apply(tf.data.experimental.ignore_errors())
+
+  # midi_neg = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/MIDI/Negative').glob('*.mid')))
+  # image_neg = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/GAPED/Negative').glob('*.jpg')))
+  # paired_neg = PairedDataset(midi_neg, image_neg, config, max_tensors_per_midi = 10)
+  # dataset_neg = paired_neg.ds.apply(tf.data.experimental.ignore_errors())
+
+
+  ## Faces Test ##
+  # df = pd.read_csv('/home/niharg/Documents/MS/Fall 2019/CSCI566/list_attr_celeba.txt', sep = '\s+')
+  # image_smiling = df[df.Smiling == 1]
+  # image_not_smiling = df[df.Smiling == -1]
+
+  # BASE_PATH = '/home/niharg/Documents/MS/Fall 2019/CSCI566/img_align_celeba/'
+  # midi_list = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Metallica/').glob('*.mid')))
+  # images_neg = [BASE_PATH + name for name in image_not_smiling.img_name]
+  # paired_pos = PairedDataset(midi_list, images_neg, config, max_tensors_per_midi=50, repeat_images=False)
+  # dataset_pos = paired_pos.ds.apply(tf.data.experimental.ignore_errors())
+
+
+  # midi_list2 = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/clean_midi/Elton John/').glob('*.mid')))
+  # images_pos = [BASE_PATH + name for name in image_smiling.img_name]
+  # paired_neg = PairedDataset(midi_list2, images_pos, config, max_tensors_per_midi=50, repeat_images=False)
+  # dataset_neg = paired_neg.ds.apply(tf.data.experimental.ignore_errors())
+
+  # print('Found positive images: ', len(images_pos))
+  # print('Found negative images: ', len(images_neg))
+  ## Faces End ##
+
+  ## Large Scale Data ##
+  midis_positive = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/music_data/train/positive').glob('*.mid')))
+  images_positive = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/image_data/train/positive').glob('*.jpg')))
+  paired_pos = PairedDataset(midis_positive, images_positive, config, max_tensors_per_midi=100, repeat_images=False)
+  dataset_pos = paired_pos.ds.apply(tf.data.experimental.ignore_errors())
+
+  midis_negative = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/music_data/train/negative').glob('*.mid')))
+  images_negative = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/image_data/train/negative').glob('*.jpg')))
+  paired_neg = PairedDataset(midis_negative, images_negative, config, max_tensors_per_midi=100, repeat_images=False)
+  dataset_neg = paired_neg.ds.apply(tf.data.experimental.ignore_errors())
+  ## Large Scale End  ##
+
   # ### ------------------ ###
+  dataset = tf.data.experimental.sample_from_datasets((dataset_pos.shuffle(200), dataset_neg.shuffle(200)))
   dataset = dataset.cache().shuffle(10 * batch_size).repeat()
   dataset = dataset.padded_batch(batch_size,
    dataset.output_shapes,
-    drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+    drop_remainder = True).prefetch(tf.data.experimental.AUTOTUNE)
+  
   return dataset  #, ds_series_batch
 
 
