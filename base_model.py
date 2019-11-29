@@ -176,8 +176,7 @@ class MusicVAE(object):
     self._decoder.build(hparams, output_depth, is_training)
     self.ae = Autoencoder()
     self.ae.build_var()
-    with tf.variable_scope('shared_layers', reuse=tf.AUTO_REUSE):
-      self.shared_z = tf.layers.Dense(units=256, activation=tf.nn.leaky_relu, name='shared_z')
+    self.shared_z = tf.layers.Dense(units=256, activation=tf.nn.leaky_relu, name='shared_z')
 
   @property
   def encoder(self):
@@ -290,7 +289,7 @@ class MusicVAE(object):
       # sigma_image_final = tf.tile(sigma_image, [factor, 1])
 
       if summary:
-        tf.summary.image('input_midi', tf.expand_dims(input_sequence, axis=-1), max_outputs=6)
+        tf.summary.image('input_midi', tf.expand_dims(input_sequence, axis=-1), max_outputs=5)
         tf.summary.image('input_images', image_input, max_outputs=5)
       mu_music, sigma_music = music_qz.loc, music_qz.scale.diag
       
@@ -324,22 +323,34 @@ class MusicVAE(object):
     r_loss, metric_map = self.decoder.reconstruction_loss(
         x_input, x_target, x_length, image_z, control_sequence)[0:2]
 
+    # r_loss_music, metric_map = self.decoder.reconstruction_loss(
+    #     x_input, x_target, x_length, music_z, control_sequence)[0:2]
+
     ## Image Reconstruction Loss through music
     recon_imgs = self.ae.decode_var_new(music_z, *shapes)
     if summary:
-      tf.summary.image('recon_images', recon_imgs, max_outputs=6)
+      tf.summary.image('recon_images', recon_imgs, max_outputs=5)
     flat_imgs = tf.reshape(image_input, (tf.shape(image_input)[0], -1))
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
     recon_loss = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs, 2), axis=1)
     recon_loss = tf.reduce_mean(recon_loss)
 
+    # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
+    # if summary:
+    #   tf.summary.image('recon_imgs_imgs', recon_imgs_imgs, max_outputs=5)
+    
+    # flat_recon_imgs_imgs = tf.reshape(recon_imgs_imgs, (tf.shape(recon_imgs_imgs)[0], -1))
+
+    # recon_loss_imgs = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs_imgs, 2), axis=1)
+    # recon_loss_imgs = tf.reduce_mean(recon_loss_imgs)
+
     free_nats = hparams.free_bits * tf.math.log(2.0)
     kl_cost = tf.maximum(kl_div - free_nats, 0)
 
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
-    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss + tf.reduce_mean(kl_div_img)
+    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss + beta * tf.reduce_mean(kl_div_img) # + tf.reduce_mean(r_loss_music) + recon_loss_imgs
 
 
     scalars_to_summarize = {
@@ -349,7 +360,9 @@ class MusicVAE(object):
         'losses/kl_bits': kl_div / tf.math.log(2.0),
         'losses/kl_beta': beta,
         'losses/image_recon_loss': recon_loss,
-        'losses/image_kl_div': kl_div_img
+        'losses/image_kl_div': kl_div_img,
+        # 'loss/recon_loss_img_img': recon_loss_imgs,
+        # 'losses/r_loss_music': r_loss_music
     }
     return metric_map, scalars_to_summarize
 
