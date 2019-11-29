@@ -2,7 +2,7 @@ import tensorflow as tf
 from magenta.scripts.convert_dir_to_note_sequences import convert_midi
 
 class PairedDataset(object):
-    def __init__(self, midi_list, image_list, config, batch_size=16):
+    def __init__(self, midi_list, image_list, config, batch_size=16, max_tensors_per_midi=5, repeat_images=True):
         """
         :param midi_list: List of full paths to midi files.
         :param image_list: List of full paths to image files.
@@ -12,7 +12,10 @@ class PairedDataset(object):
         self.image_list = image_list
         self.config = config
         self.bs = batch_size
-        
+        self.data_converter = config.data_converter
+        self.max_tensors_per_midi = max_tensors_per_midi
+        self.data_converter.max_tensors_per_notesequence = max_tensors_per_midi
+        self.repeat_images = repeat_images
         self.create_tf_dataset()
     
     @staticmethod
@@ -31,7 +34,10 @@ class PairedDataset(object):
         img = tf.image.convert_image_dtype(img, tf.float32)
         return tf.image.resize(img, [64, 64])
     
-    
+    @staticmethod
+    def random_augment(img):
+        return tf.image.random_flip_left_right(img)
+
     def create_tf_dataset(self):
         def gen_midi_data():
             for item in self.midi_list:
@@ -39,13 +45,15 @@ class PairedDataset(object):
         
         ds1 = tf.data.Dataset.from_generator(gen_midi_data, output_types=tf.string)
         ds1 = ds1.map(self.config.note_sequence_augmenter.tf_augment)
-        ds1 = ds1.map(self.config.data_converter.tf_to_tensors, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
+        ds1 = ds1.map(self.data_converter.tf_to_tensors, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
                  .flat_map(lambda *t: tf.data.Dataset.from_tensor_slices(t))
         ds1 = ds1.map(PairedDataset._remove_pad_fn)
         
         
         ds2 = tf.data.Dataset.from_generator(lambda: iter(self.image_list), output_types=tf.string)
         ds2 = ds2.map(PairedDataset.decode_img)
+        if self.repeat_images:
+            ds2 = ds2.flat_map(lambda x: tf.data.Dataset.from_tensors(x).repeat(self.max_tensors_per_midi).map(PairedDataset.random_augment))
         
         self.ds = tf.data.Dataset.zip((ds1, ds2))
         # self.ds = self.ds.padded_batch(self.bs, self.ds.output_shapes, drop_remainder=True).repeat()
