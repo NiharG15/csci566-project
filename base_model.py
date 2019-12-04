@@ -334,7 +334,7 @@ class MusicVAE(object):
     flat_imgs = tf.reshape(image_input, (tf.shape(image_input)[0], -1))
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
-    recon_loss = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs, 2), axis=1)
+    recon_loss = tf.reduce_mean(tf.pow(flat_imgs - flat_recon_imgs, 2))
 
     # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
     # if summary:
@@ -361,7 +361,7 @@ class MusicVAE(object):
     reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
     reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
 
-    reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
+    reverse_cycle_loss = tf.reduce_mean(tf.abs(reverse_image_z - reverse_music_z))
     
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
@@ -371,10 +371,10 @@ class MusicVAE(object):
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
 
-    self.loss = 10 * tf.reduce_mean(r_loss) + tf.reduce_mean(recon_loss) + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
+    self.loss = tf.reduce_mean(r_loss) + recon_loss + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
     
     if gamma > 0:
-        self.loss += gamma * tf.reduce_mean(reverse_cycle_loss)
+        self.loss += gamma * reverse_cycle_loss
 
     scalars_to_summarize = {
         'loss': self.loss,
@@ -478,14 +478,14 @@ def get_default_hparams():
       free_bits=0.0,  # Bits to exclude from KL loss per dimension.
       max_beta=1.0,  # Maximum KL cost weight, or cost if not annealing.
       beta_rate=0.0,  # Exponential rate at which to anneal KL cost.
-      gamma=500, # Coefficient for reverse cycle loss.
+      gamma=5, # Coefficient for reverse cycle loss.
       batch_size=512,  # Minibatch size.
       grad_clip=1.0,  # Gradient clipping. Recommend leaving at 1.0.
       clip_mode='global_norm',  # value or global_norm.
       # If clip_mode=global_norm and global_norm is greater than this value,
       # the gradient will be clipped to 0, effectively ignoring the step.
       grad_norm_clip_to_zero=10000,
-      learning_rate=0.0001,  # Learning rate.
+      learning_rate=0.0002,  # Learning rate.
       decay_rate=0.9999,  # Learning rate decay per minibatch.
-      min_learning_rate=0.00001,  # Minimum learning rate.
+      min_learning_rate=0.000002,  # Minimum learning rate.
   )
