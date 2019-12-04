@@ -219,18 +219,18 @@ class MusicVAE(object):
     print('rararara',self.encoder)
     encoder_output = self.encoder.encode(sequence, sequence_length)
 
-
-    mu = tf.layers.dense(
-        encoder_output,
-        z_size,
-        name='encoder/mu',
-        kernel_initializer=tf.random_normal_initializer(stddev=0.001))
-    sigma = tf.layers.dense(
-        encoder_output,
-        z_size,
-        activation=tf.nn.softplus,
-        name='encoder/sigma',
-        kernel_initializer=tf.random_normal_initializer(stddev=0.001))
+    with tf.variable_scope('encoder/qz', reuse=tf.AUTO_REUSE):
+        mu = tf.layers.dense(
+            encoder_output,
+            z_size,
+            name='encoder/mu',
+            kernel_initializer=tf.random_normal_initializer(stddev=0.001))
+        sigma = tf.layers.dense(
+            encoder_output,
+            z_size,
+            activation=tf.nn.softplus,
+            name='encoder/sigma',
+            kernel_initializer=tf.random_normal_initializer(stddev=0.001))
 
     # eps = tf.random_normal(
     #         shape=tf.shape(sigma),
@@ -334,7 +334,6 @@ class MusicVAE(object):
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
     recon_loss = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs, 2), axis=1)
-    recon_loss = tf.reduce_mean(recon_loss)
 
     # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
     # if summary:
@@ -343,15 +342,37 @@ class MusicVAE(object):
     # flat_recon_imgs_imgs = tf.reshape(recon_imgs_imgs, (tf.shape(recon_imgs_imgs)[0], -1))
 
     # recon_loss_imgs = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs_imgs, 2), axis=1)
-    # recon_loss_imgs = tf.reduce_mean(recon_loss_imgs)
+
+    
+    gamma = hparams.gamma
+
+    random_z = tf.random.normal(music_z.shape)
+    random_music = self.decoder.reconstruction_loss(x_input, x_target, x_length, random_z, control_sequence)[2].rnn_output
+    random_image = self.ae.decode_var_new(random_z, *shapes)
+
+    random_music = tf.stop_gradient(random_music)
+    random_image = tf.stop_gradient(random_image)
+
+    reverse_music_dist = self.encode(random_music, x_length, control_sequence)
+    reverse_image_dist, *reverse_shapes = self.ae.encode_var_new(random_image)
+    reverse_music_mu = reverse_music_dist.loc
+    reverse_image_mu = reverse_image_dist.loc
+    reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
+    reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
+
+    reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
+    
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
     kl_cost = tf.maximum(kl_div - free_nats, 0)
 
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
-    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss + beta * tf.reduce_mean(kl_div_img) # + tf.reduce_mean(r_loss_music) + recon_loss_imgs
 
+    self.loss = tf.reduce_mean(r_loss) + tf.reduce_mean(recon_loss) + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
+    
+    if gamma > 0:
+        self.loss += gamma * tf.reduce_mean(reverse_cycle_loss)
 
     scalars_to_summarize = {
         'loss': self.loss,
@@ -361,6 +382,7 @@ class MusicVAE(object):
         'losses/kl_beta': beta,
         'losses/image_recon_loss': recon_loss,
         'losses/image_kl_div': kl_div_img,
+        'losses/reverse_cycle_loss': reverse_cycle_loss,
         # 'loss/recon_loss_img_img': recon_loss_imgs,
         # 'losses/r_loss_music': r_loss_music
     }
@@ -454,6 +476,7 @@ def get_default_hparams():
       free_bits=0.0,  # Bits to exclude from KL loss per dimension.
       max_beta=1.0,  # Maximum KL cost weight, or cost if not annealing.
       beta_rate=0.0,  # Exponential rate at which to anneal KL cost.
+      gamma=5, # Coefficient for reverse cycle loss.
       batch_size=512,  # Minibatch size.
       grad_clip=1.0,  # Gradient clipping. Recommend leaving at 1.0.
       clip_mode='global_norm',  # value or global_norm.

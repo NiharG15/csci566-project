@@ -357,8 +357,9 @@ class BaseLstmDecoder(base_model.BaseDecoder):
     Returns:
       results: The LstmDecodeResults.
     """
-    initial_state = lstm_utils.initial_cell_state_from_embedding(
-        self._dec_cell, z, name='decoder/z_to_initial_state')
+    with tf.variable_scope('initial_state', reuse = tf.AUTO_REUSE):
+        initial_state = lstm_utils.initial_cell_state_from_embedding(
+            self._dec_cell, z, name='decoder/z_to_initial_state')
 
     # CudnnLSTM does not support sampling so it can only replace TrainingHelper.
     if  self._cudnn_dec_lstm and type(helper) is seq2seq.TrainingHelper:  # pylint:disable=unidiomatic-typecheck
@@ -367,7 +368,7 @@ class BaseLstmDecoder(base_model.BaseDecoder):
           initial_state=lstm_utils.state_tuples_to_cudnn_lstm_state(
               initial_state),
           training=self._is_training)
-      with tf.variable_scope('decoder'):
+      with tf.variable_scope('decoder', reuse = tf.AUTO_REUSE):
         rnn_output = self._output_layer(rnn_output)
 
       results = lstm_utils.LstmDecodeResults(
