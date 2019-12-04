@@ -335,6 +335,7 @@ class MusicVAE(object):
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
     recon_loss = tf.reduce_mean(tf.pow(flat_imgs - flat_recon_imgs, 2))
+    recon_loss *= 1600
 
     # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
     # if summary:
@@ -362,6 +363,7 @@ class MusicVAE(object):
     reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
 
     reverse_cycle_loss = tf.reduce_mean(tf.abs(reverse_image_z - reverse_music_z))
+    reverse_cycle_loss *= 1600
     
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
@@ -485,7 +487,7 @@ def get_default_hparams():
       # If clip_mode=global_norm and global_norm is greater than this value,
       # the gradient will be clipped to 0, effectively ignoring the step.
       grad_norm_clip_to_zero=10000,
-      learning_rate=0.0002,  # Learning rate.
+      learning_rate=0.0001,  # Learning rate.
       decay_rate=0.9999,  # Learning rate decay per minibatch.
-      min_learning_rate=0.000002,  # Minimum learning rate.
+      min_learning_rate=0.000001,  # Minimum learning rate.
   )
