@@ -48,12 +48,14 @@ class PairedDataset(object):
         ds1 = ds1.map(self.data_converter.tf_to_tensors, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
                  .flat_map(lambda *t: tf.data.Dataset.from_tensor_slices(t))
         ds1 = ds1.map(PairedDataset._remove_pad_fn)
+        ds1 = ds1.shuffle(200)
         
         
         ds2 = tf.data.Dataset.from_generator(lambda: iter(self.image_list), output_types=tf.string)
         ds2 = ds2.map(PairedDataset.decode_img)
         if self.repeat_images:
             ds2 = ds2.flat_map(lambda x: tf.data.Dataset.from_tensors(x).repeat(self.max_tensors_per_midi).map(PairedDataset.random_augment))
+        ds2 = ds2.shuffle(200)
         
         self.ds = tf.data.Dataset.zip((ds1, ds2))
         # self.ds = self.ds.padded_batch(self.bs, self.ds.output_shapes, drop_remainder=True).repeat()
