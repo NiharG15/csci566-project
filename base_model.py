@@ -346,22 +346,21 @@ class MusicVAE(object):
     
     gamma = hparams.gamma
 
-    if gamma > 0:
-        random_z = tf.random.normal(music_z.shape)
-        random_music = self.decoder.reconstruction_loss(x_input, x_target, x_length, random_z, control_sequence)[2].rnn_output
-        random_image = self.ae.decode_var_new(random_z, *shapes)
+    random_z = tf.random.normal(music_z.shape)
+    random_music = self.decoder.reconstruction_loss(x_input, x_target, x_length, random_z, control_sequence)[2].rnn_output
+    random_image = self.ae.decode_var_new(random_z, *shapes)
 
-        random_music = tf.stop_gradient(random_music)
-        random_image = tf.stop_gradient(random_image)
+    random_music = tf.stop_gradient(random_music)
+    random_image = tf.stop_gradient(random_image)
 
-        reverse_music_dist = self.encode(random_music, x_length, control_sequence)
-        reverse_image_dist, *reverse_shapes = self.ae.encode_var_new(random_image)
-        reverse_music_mu = reverse_music_dist.loc
-        reverse_image_mu = reverse_image_dist.loc
-        reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
-        reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
+    reverse_music_dist = self.encode(random_music, x_length, control_sequence)
+    reverse_image_dist, *reverse_shapes = self.ae.encode_var_new(random_image)
+    reverse_music_mu = reverse_music_dist.loc
+    reverse_image_mu = reverse_image_dist.loc
+    reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
+    reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
 
-        reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
+    reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
     
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
@@ -370,7 +369,7 @@ class MusicVAE(object):
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
 
-    self.loss = tf.reduce_mean(r_loss) + tf.reduce_mean(recon_loss) + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
+    self.loss = 10 * tf.reduce_mean(r_loss) + tf.reduce_mean(recon_loss) + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
     
     if gamma > 0:
         self.loss += gamma * tf.reduce_mean(reverse_cycle_loss)
@@ -477,14 +476,14 @@ def get_default_hparams():
       free_bits=0.0,  # Bits to exclude from KL loss per dimension.
       max_beta=1.0,  # Maximum KL cost weight, or cost if not annealing.
       beta_rate=0.0,  # Exponential rate at which to anneal KL cost.
-      gamma=5, # Coefficient for reverse cycle loss.
+      gamma=500, # Coefficient for reverse cycle loss.
       batch_size=512,  # Minibatch size.
       grad_clip=1.0,  # Gradient clipping. Recommend leaving at 1.0.
       clip_mode='global_norm',  # value or global_norm.
       # If clip_mode=global_norm and global_norm is greater than this value,
       # the gradient will be clipped to 0, effectively ignoring the step.
       grad_norm_clip_to_zero=10000,
-      learning_rate=0.001,  # Learning rate.
+      learning_rate=0.0001,  # Learning rate.
       decay_rate=0.9999,  # Learning rate decay per minibatch.
       min_learning_rate=0.00001,  # Minimum learning rate.
   )
