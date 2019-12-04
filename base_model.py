@@ -347,21 +347,22 @@ class MusicVAE(object):
     
     gamma = hparams.gamma
 
-    random_z = tf.random.normal(music_z.shape)
-    random_music = self.decoder.reconstruction_loss(x_input, x_target, x_length, random_z, control_sequence)[2].rnn_output
-    random_image = self.ae.decode_var_new(random_z, *shapes)
+    if gamma > 0:
+        random_z = tf.random.normal(music_z.shape)
+        random_music = self.decoder.reconstruction_loss(x_input, x_target, x_length, random_z, control_sequence)[2].rnn_output
+        random_image = self.ae.decode_var_new(random_z, *shapes)
 
-    random_music = tf.stop_gradient(random_music)
-    random_image = tf.stop_gradient(random_image)
+        random_music = tf.stop_gradient(random_music)
+        random_image = tf.stop_gradient(random_image)
 
-    reverse_music_dist = self.encode(random_music, x_length, control_sequence)
-    reverse_image_dist, *reverse_shapes = self.ae.encode_var_new(random_image)
-    reverse_music_mu = reverse_music_dist.loc
-    reverse_image_mu = reverse_image_dist.loc
-    reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
-    reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
+        reverse_music_dist = self.encode(random_music, x_length, control_sequence)
+        reverse_image_dist, *reverse_shapes = self.ae.encode_var_new(random_image)
+        reverse_music_mu = reverse_music_dist.loc
+        reverse_image_mu = reverse_image_dist.loc
+        reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
+        reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
 
-    reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
+        reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
     
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
