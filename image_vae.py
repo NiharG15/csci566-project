@@ -287,8 +287,8 @@ class Autoencoder(object):
         self.enc_conv1 = tf.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu, name='enc_conv1')
         self.mp2 = tf.layers.MaxPooling2D(pool_size=2, strides=2)
         self.flatten = tf.layers.Flatten()
-        self.enc_mu = tf.layers.Dense(units=256, name='enc_mu')
-        self.enc_sigma = tf.layers.Dense(units=256, activation=tf.nn.softplus, name='enc_sigma')
+        self.enc_mu = tf.layers.Dense(units=self.n_z, name='enc_mu')
+        self.enc_sigma = tf.layers.Dense(units=self.n_z, activation=tf.nn.softplus, name='enc_sigma')
         
         self.dec_dense = tf.layers.Dense(units=16 * 16 * 64, activation=tf.nn.leaky_relu, name='dec_dense')
         self.dec_conv1 = tf.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.leaky_relu, name='dec_conv1')
