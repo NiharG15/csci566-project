@@ -1334,14 +1334,14 @@ def get_dataset(
   ## Faces End ##
 
   ## Large Scale Data ##
-  midis_positive = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/music_data/train/positive').glob('*.mid')))
-  images_positive = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/image_data/train/positive').glob('*.jpg')))
-  paired_pos = PairedDataset(midis_positive, images_positive, config, max_tensors_per_midi=100, repeat_images=False)
+  midis_positive = list(map(str, Path('/home/potrepka/Downloads/music_data/train/positive').glob('*.mid')))
+  images_positive = list(map(str, Path('/home/potrepka/Downloads/GAPED/P_j').glob('*.jpg')))
+  paired_pos = PairedDataset(midis_positive, images_positive, config, max_tensors_per_midi=10)
   dataset_pos = paired_pos.ds.apply(tf.data.experimental.ignore_errors())
 
-  midis_negative = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/music_data/train/negative').glob('*.mid')))
-  images_negative = list(map(str, Path('/home/niharg/Documents/MS/Fall 2019/CSCI566/image_data/train/negative').glob('*.jpg')))
-  paired_neg = PairedDataset(midis_negative, images_negative, config, max_tensors_per_midi=100, repeat_images=False)
+  midis_negative = list(map(str, Path('/home/potrepka/Downloads/music_data/train/negative').glob('*.mid')))
+  images_negative = list(map(str, Path('/home/potrepka/Downloads/GAPED/Sn_j').glob('*.jpg')))
+  paired_neg = PairedDataset(midis_negative, images_negative, config, max_tensors_per_midi=10)
   dataset_neg = paired_neg.ds.apply(tf.data.experimental.ignore_errors())
   ## Large Scale End  ##
 
