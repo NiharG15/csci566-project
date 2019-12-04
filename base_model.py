@@ -174,9 +174,10 @@ class MusicVAE(object):
     self._hparams = hparams
     self._encoder.build(hparams, is_training)
     self._decoder.build(hparams, output_depth, is_training)
-    self.ae = Autoencoder()
+    self.ae = Autoencoder(n_z=hparams.z_size)
     self.ae.build_var()
-    self.shared_z = tf.layers.Dense(units=256, activation=tf.nn.leaky_relu, name='shared_z')
+    self.shared_z = tf.layers.Dense(units=hparams.z_size, activation=tf.nn.leaky_relu, name='shared_z')
+    self.shared_z2 = tf.layers.Dense(units=hparams.z_size, activation=tf.nn.leaky_relu, name='shared_z2')
 
   @property
   def encoder(self):
@@ -315,7 +316,7 @@ class MusicVAE(object):
 
     stacked_z = tf.concat((image_z, music_z), axis=0)
     # print(stacked_z.shape)
-    stacked_z_out = self.shared_z(stacked_z)    # , units=256, activation=tf.nn.leaky_relu, name='shared_z')
+    stacked_z_out = self.shared_z2(self.shared_z(stacked_z))
     # print(stacked_z_out.shape)
     image_z, music_z = tf.split(stacked_z_out, num_or_size_splits=2, axis=0)
     # print(music_z.shape)
@@ -350,7 +351,7 @@ class MusicVAE(object):
 
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
-    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss + beta * tf.reduce_mean(kl_div_img) # + tf.reduce_mean(r_loss_music) + recon_loss_imgs
+    self.loss = tf.reduce_mean(r_loss) + beta * tf.reduce_mean(kl_cost) + recon_loss +  tf.reduce_mean(kl_div_img) # + tf.reduce_mean(r_loss_music) + recon_loss_imgs
 
 
     scalars_to_summarize = {
