@@ -334,8 +334,7 @@ class MusicVAE(object):
     flat_imgs = tf.reshape(image_input, (tf.shape(image_input)[0], -1))
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
-    recon_loss = tf.reduce_mean(tf.pow(flat_imgs - flat_recon_imgs, 2))
-    recon_loss *= 1600
+    recon_loss = tf.reduce_sum(tf.abs(flat_imgs - flat_recon_imgs), axis=1)
 
     # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
     # if summary:
@@ -362,8 +361,7 @@ class MusicVAE(object):
     reverse_stacked_mu = tf.concat((reverse_image_mu, reverse_music_mu), axis=0)
     reverse_image_z, reverse_music_z = tf.split(self.shared_z(reverse_stacked_mu), num_or_size_splits=2, axis=0)
 
-    reverse_cycle_loss = tf.reduce_mean(tf.abs(reverse_image_z - reverse_music_z))
-    reverse_cycle_loss *= 1600
+    reverse_cycle_loss = tf.reduce_sum(tf.abs(reverse_image_z - reverse_music_z), axis=1)
     
 
     free_nats = hparams.free_bits * tf.math.log(2.0)
@@ -373,10 +371,10 @@ class MusicVAE(object):
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
 
-    self.loss = tf.reduce_mean(r_loss) + recon_loss + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_cost_img))
+    self.loss = tf.reduce_mean(r_loss) + tf.reduce_mean(recon_loss) + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_cost_img))
     
     if gamma > 0:
-        self.loss += gamma * reverse_cycle_loss
+        self.loss += gamma * tf.reduce_mean(reverse_cycle_loss)
 
     scalars_to_summarize = {
         'loss': self.loss,
