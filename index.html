@@ -13018,45 +13018,6 @@ ul.typeahead-list  > li > a.pull-right {
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
 <style type="text/css">
-    
-/* Temporary definitions which will become obsolete with Notebook release 5.0 */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-bold { font-weight: bold; }
-
-    </style>
-<style type="text/css">
     /*This file contains any manual css for this page that needs to override the global styles.
 This is only required when different pages style the same element differently. This is just
 a hack to deal with our current css styles and no new styling should be added in this file.*/
@@ -13153,8 +13114,7 @@ div.prompt {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Motivation-and-Problem-Statement">Motivation and Problem Statement<a class="anchor-link" href="#Motivation-and-Problem-Statement">&#182;</a></h2><p>&nbsp;
-Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
+<h2 id="Motivation-and-Problem-Statement">Motivation and Problem Statement<a class="anchor-link" href="#Motivation-and-Problem-Statement">&#182;</a></h2><p>Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
 <p>Translation from image to music has applications like automatic photo album / movie generation from a series of photos. While some existing products like Google Photos do this using pre-made musical sequences, we wanted to explore a generative approach. Translation from music to image has applications like automatic cover and companion art generation.</p>
 
 </div>
@@ -13187,8 +13147,8 @@ Image and Audio are two inherently different media, however both share a common 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><img src="VAE_Architecture.png" align="center"/></p>
-<center>High Level Diagram of the Architecture</center>
+<p><img src="images/VAE_Architecture.png" align="center"/></p>
+<center>High Level Overview of the Architecture</center>
 </div>
 </div>
 </div>
@@ -13201,25 +13161,97 @@ Image and Audio are two inherently different media, however both share a common 
 <li>The decoder is a stacked LSTM with 2 layers with 512 units in each layer.</li>
 </ul>
 <p>The image encoder/decoder is a Convolutional VAE with the following architecture:</p>
-<p><img src="ImageVAE_Arch1.svg" align="center"/></p>
-<p>The resize operation uses nearest neighbour interpolation. The first dense layer in the decoder projects the <code>z_size</code> dimentional input to a <code>16 * 16 * 64</code> vector that is then reshaped to <code>(N, 16, 16, 64)</code> before feeding it to the convolutional layer. The final convolutional layer uses sigmoid activation to limit the output range to 0-1. All other layers use LeakyReLU.</p>
+<p><img src="images/ImageVAE_Arch1.svg" align="center"/></p>
+<p>The resize operation uses nearest neighbour interpolation. The first dense layer in the decoder maps the <code>z_size</code> dimentional input to a <br> <code>16 * 16 * 64</code> vector that is then reshaped to <code>(N, 16, 16, 64)</code> before feeding it to the convolutional layer. The final convolutional layer uses sigmoid activation to limit the output range to 0-1. All other layers use LeakyReLU.</p>
 <p>For other architecture parameters, we use the default values from <code>cat-mel_2bar_small</code>.</p>
-<div class="highlight"><pre><span></span><span class="n">HParams</span><span class="p">(</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
-    <span class="n">max_seq_len</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># 2 bars w/ 16 steps per bar</span>
-    <span class="n">z_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-    <span class="n">enc_rnn_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1024</span><span class="p">],</span>
-    <span class="n">dec_rnn_size</span><span class="o">=</span><span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
-    <span class="n">free_bits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">max_beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-    <span class="n">beta_rate</span><span class="o">=</span><span class="mf">0.99999</span><span class="p">,</span>
-    <span class="n">sampling_schedule</span><span class="o">=</span><span class="s1">&#39;inverse_sigmoid&#39;</span><span class="p">,</span>
-    <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+<span class="n">max_seq_len</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># 2 bars w/ 16 steps per bar</span>
+<span class="n">free_bits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">max_beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="n">beta_rate</span><span class="o">=</span><span class="mf">0.99999</span><span class="p">,</span>
+<span class="n">sampling_schedule</span><span class="o">=</span><span class="s1">&#39;inverse_sigmoid&#39;</span><span class="p">,</span>
+<span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Training-Procedure:">Training Procedure:<a class="anchor-link" href="#Training-Procedure:">&#182;</a></h3><p>We sample a <code>(music, image)</code> pair that belongs to the same class. We then pass the music through the LSTM encoder, sample $Z_{music}$ from the resulting distribution. The latent code $Z_{music}$ is then passed through the shared network to transform it into a shared latent space. This latent code is then sent to the Convolutional Decoder to generate an image <code>image_pred</code>.
+The input <code>image</code> follows similar path through the Convolutional encoder, shared network and LSTM decoder to generate <code>music_pred</code>.</p>
+<p>We minimize the following losses:</p>
+<ul>
+<li>Mean squared error between <code>image</code> and <code>image_pred</code>.</li>
+<li>Cross Entropy between <code>music</code> and <code>music_pred</code>.</li>
+<li>Latent loss for both encoder's distributions, which is the KL Divergence between them and $\mathcal{N}(0, 1)$.</li>
+</ul>
+<p>As described in the original MusicVAE paper, the KL divergence for the LSTM Encoder is multiplied by a coefficient determined by the formula: $(1.0 - \text{beta_rate}^{\text{global_step}}) * \text{max_beta}$. We experimented with applying the same beta to the KL divergence of Convolutional Encoder, but it did not affect the produced images significantly. The learning rate is exponentially decayed by a factor of 0.99 per minibatch.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Music-Data-Preprocessing:">Music Data Preprocessing:<a class="anchor-link" href="#Music-Data-Preprocessing:">&#182;</a></h3><p>We use the data preprocessing from MusicVAE. It converts each MIDI file into multiple <code>(32, 90)</code> tensors where 32 corresponds to two 16-bar melodies and 90 corresponds to the MIDI pitches. The data is one-hot encoded. The data converter handles polyphonic MIDI files by taking the note with the highest pitch to produce monophonic sequences that are fed to the network. The sequences extracted from the original MIDI file belong to piano, chromatic percussion, organ and guitar programs.</p>
+<p>Here is an example MIDI file before and after preprocessing. Multiple possible sequences are extracted from each MIDI file.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/Example_Input.png" align="center"></p>
+<center>
+<audio controls src="audio/The_Unforgiven.mp3">
+Your browser does not support the
+<code>audio</code> element.
+</audio>
+</center>
+<center> Original MIDI File </center>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/Example_Input_Converted.png" align="center"></p>
+<center>
+<audio controls src="audio/Exaple_Input_Processed.wav">
+Your browser does not support the
+<code>audio</code> element.
+</audio>
+</center>
+<center> Audio Sequence after Conversion </center>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>
