@@ -334,7 +334,7 @@ class MusicVAE(object):
     flat_imgs = tf.reshape(image_input, (tf.shape(image_input)[0], -1))
     flat_recon_imgs = tf.reshape(recon_imgs, (tf.shape(recon_imgs)[0], -1))
 
-    recon_loss = tf.reduce_sum(tf.abs(flat_imgs - flat_recon_imgs), axis=1)
+    recon_loss = tf.reduce_sum(tf.pow(flat_imgs - flat_recon_imgs, 2), axis=1)
 
     # recon_imgs_imgs = self.ae.decode_var_new(image_z, *shapes)
     # if summary:
