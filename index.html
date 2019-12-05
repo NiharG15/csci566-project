@@ -13102,7 +13102,9 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p><link href="https://fonts.googleapis.com/css?family=Merriweather&display=swap" rel="stylesheet"></p>
 <style>
+
 .container { 
     width:60% !important; 
 }
@@ -13111,7 +13113,7 @@ div.prompt {
 }
 
 div.text_cell_render { /* Customize text cells */
-    font-family: Georgia;
+    font-family: 'Merriweather', Georgia, serif;
     font-size:1.2em;
     line-height: 1.4em;
     padding-left: 2em;
@@ -13144,6 +13146,35 @@ div.text_cell_render { /* Customize text cells */
 <h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>In this project, we explored the generation of music from image and image from music both through a shared network. For encoding and decoding music, we chose the <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae">MusicVAE</a> architecture. For encoding and decoding images, we used a Convolutional VAE. To test our architecture's ability to generate music from an image and image from a piece of music while retaining the characteristics of the input, we performed three experiments. Due to a lack of large enough MIDI dataset annotated with emotions, we decided to use genre of music as a substitute. In the first experiment, we paired heavy metal with negative images from <a href="https://www.ncbi.nlm.nih.gov/pubmed/21431997">GAPED</a> dataset and pop music with positive images from GAPED dataset. In the second experiment, we scaled up the data to use 3000 images per class taken from <a href="https://www.cs.rochester.edu/u/qyou/deepemotion/">DeepEmotion</a> dataset. In the third experiment, we paired the same two genres of music with images of celebrities expressing two different emotions (smiling/not smiling) from <a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html">CelebA</a> dataset. We also compared the results of the first experiment to a baseline model that only used fully connected layers instead of LSTMs, and found that our proposed architecture performed better than baseline.</p>
 <p>In addition to our VAE approach, we looked at a second architecture, CycleGAN, that we hoped could be useful for producing higher resolution output. The two major additions that CycleGAN brings to the table are GAN Loss (Generator and Discriminator) along with Cycle Reconstruction Loss. While the architecture did not work well for the translation task, it worked well towards maintaining cycle consistency and producing high resolution images.</p>
 <p>We present the details of both our architectures and their results below.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Table-of-Contents">Table of Contents<a class="anchor-link" href="#Table-of-Contents">&#182;</a></h2><ul>
+<li><a href="#Variational-Autencoder-Approach">Variational Autoencoder Approach</a><ul>
+<li><a href="#Architecture-Details:">Architecture Details</a></li>
+<li><a href="#Training-Procedure:">Training Procedure</a></li>
+<li><a href="#Music-Data-Preprocessing:">Music Data Preprocessing</a></li>
+<li><a href="#Experiments">Experiments</a><ul>
+<li><a href="#Experiment-1">Experiment 1</a></li>
+<li><a href="#Experiment-2">Experiment 2</a></li>
+<li><a href="#Experiment-3">Experiment 3</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#Baseline-Network:">Baseline Model</a><ul>
+<li><a href="#baseline-arch-details">Architecture Details</a></li>
+<li><a href="#baseline-train">Training Procedure</a></li>
+<li><a href="#baseline-comparisons">Comparisons</a></li>
+<li><a href="#baseline-results">Results</a></li>
+</ul>
+</li>
+<li><a href="">CycleGAN Approach</a></li>
+</ul>
 
 </div>
 </div>
@@ -13486,14 +13517,14 @@ Your browser does not support the
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Baseline-Network:">Baseline Network:<a class="anchor-link" href="#Baseline-Network:">&#182;</a></h2><p>To verify that our proposed architecture performs well, we compared it to a fully connected baseline network. We found that our approach beats the baseline in quality of results.</p>
-<p><strong>Architecture Details</strong>:</p>
+<p><strong>Architecture Details</strong>: <a name="baseline-arch-details"></a></p>
 <p>The music and image encoder-decoders consisted of only consecutive fully connected layers. RELU activations were used after every layer. The final layer uses a linear activation function to produce the image/music output.</p>
 <p><img src="images/baseline_arch.png" align="center" width="350"></p>
-<p><strong>Training procedure:</strong>
+<p><strong>Training procedure:</strong> <a name="baseline-train"></a>
 The network follows the same training procedure as our VAE approach. The sampled (music, image) pair passes through the network to generate a predicted image and music. We then minimize the loss between the predicted outputs and corresponding inputs (as described above). We use the Adadelta optimizer and train the model for 500 epochs with a batch size of 64.</p>
-<p><strong>Comparisons:</strong>
+<p><strong>Comparisons:</strong> <a name="baseline-comparisons"></a>
 The Variational Encoder approach clearly outperforms the Baseline model. The music generated by the baseline was not coherent as the sequential information is not captured by the model. In terms of the images, the absence of convolutional layers can be clearly seen. This is because the baseline is not able to extract relevant features that are uniquely descriptive of the content of the images. However, baseline models are still able to produce images and music that are discernable.</p>
-<p><strong>Results:</strong>
+<p><strong>Results:</strong> <a name="baseline-results"></a>
 <img src="images/baseline_results1.png" align="center"></p>
 <p><style> 
 .rendered_html td {
