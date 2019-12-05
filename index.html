@@ -13107,6 +13107,14 @@ div#notebook {
 div.prompt {
     display: none;
 }
+
+div.text_cell_render { /* Customize text cells */
+    font-family: Georgia;
+    font-size:1.2em;
+    line-height: 1.4em;
+    padding-left: 2em;
+    padding-right: 2em;
+}
 </style>
 </div>
 </div>
@@ -13155,7 +13163,7 @@ div.prompt {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Architecture-Details:">Architecture Details:<a class="anchor-link" href="#Architecture-Details:">&#182;</a></h4><p>The music encoder/decoder is based on the <code>cat-mel_2bar_small</code> architecture from MusicVAE. The architectural details are as follows:</p>
+<h3 id="Architecture-Details:">Architecture Details:<a class="anchor-link" href="#Architecture-Details:">&#182;</a></h3><p>The music encoder/decoder is based on the <code>cat-mel_2bar_small</code> architecture from MusicVAE. The architectural details are as follows:</p>
 <ul>
 <li>The encoder is a Bidirectional LSTM containing 1024 cells.</li>
 <li>The decoder is a stacked LSTM with 2 layers with 512 units in each layer.</li>
@@ -13240,18 +13248,236 @@ Your browser does not support the
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-    </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Experiments">Experiments<a class="anchor-link" href="#Experiments">&#182;</a></h3>
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Experiment-1">Experiment 1<a class="anchor-link" href="#Experiment-1">&#182;</a></h4><p>In this experiment, we paired music sequences extracted from heavy metal songs (belonging to Metallica, Megadeth, Iron Maiden, Pantera and Black Sabbath in the <a href="https://colinraffel.com/projects/lmd/">Lakh MIDI Dataset</a>) to the negative images in the GAPED dataset, and music sequences from pop songs (belonging to Elton John, Madonna and Spice Girls) to positive images in the GAPED dataset. This experiment was designed to test the ability of the network to translate between the two domains (music and images) while maintaining the class of the input in the generated output. To make the problem easier, we chose music that sounded very different and images that looked very different. Both classes of images contained about 120 images each. Each image was repeated 5 times with random augmentation (flip left/right) to compensate for the difference in size between music and image datasets. We extracted a maximum of 10 monophonic sequences from each MIDI file. The model was trained for 4800 steps.</p>
 
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/gaped_example.png" align="center"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/exp1_loss.png" align="center"></p>
+<center> Loss Curve </center>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Positive Images to Music
+<img src="images/exp1_results1.png" align="center"></p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<table>
+    <tr>
+        <td> <audio controls src="audio/Exp1-Gen-Positive1.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Gen-Positive2.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Gen-Positive3F.wav"/> </td>
+    </tr>
+</table><p>Here, the third case is a failure as it generates almost a single high pitched note.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Negative Images to Music
+<img src="images/exp1_results2.png" align="center"></p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<table>
+    <tr>
+        <td> <audio controls src="audio/Exp1-Gen-Negative1.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Gen-Negative2.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Gen-Negative3F.wav"/> </td>
+    </tr>
+</table>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Pop Music to Images</p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Pos1.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Pos2.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Pos3F.wav"/> </td>
+    </tr>
+</table>
+<img src="images/exp1_results3.png" align="center"></p>
+<p>The first two examples show one of the challenges encountered while training this network. As our loss function enforced recreation of the input image, the generated images are not truly novel. The third case is a failed result with no distinguishable features of either class.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Heavy Metal Music to Images</p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Neg1F.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Neg2.wav"/> </td>
+        <td> <audio controls src="audio/Exp1-Sample-Midi-Neg3F.wav"/> </td>
+    </tr>
+</table>
+<img src="images/exp1_results4.png" align="center"></p>
+<p>The result in the third case here has characteristics from the positive class (blue skies and landscape) even though the input note sequence is from the heavy metal class.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Experiment-2">Experiment 2<a class="anchor-link" href="#Experiment-2">&#182;</a></h4><p>In this experiment, we paired the same music dataset (Pop and Heavy Metal) with positive and negative images from the DeepEmotion dataset respectively. The positive images were taken from the amusement and excitement classes of DeepEmotion, while negative images were taken from fear and sadness classes. The images which had more number of agreeing annotations than disagreeing were chosen and the positive set was downsampled to match the size of negative images. After the preprocessing, each class of data had about 3000 images. We extracted all possible monophonic from sequences each MIDI file. In this experiment, the images were not repeated. The model was trained for 8600 iterations. Since we did not increase the network size, the network underfit this more complex data and the results were qualitatively worse.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/deepemotion_example.png" align="center"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/exp2_loss.png" align="center"></p>
+<center> Loss Curve </center>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Images to Music (Positive, Positive, Negative)
+<img src="images/exp2_results1.png" align="center"></p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<table>
+    <tr>
+        <td> <audio controls src="audio/Exp2-Gen-Pos1.wav"/> </td>
+        <td> <audio controls src="audio/Exp2-Gen-Pos2.wav"/> </td>
+        <td> <audio controls src="audio/Exp2-Gen-Neg1.wav"/> </td>
+    </tr>
+</table>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results</strong>: Music to Images (Pop, Heavy Metal, Heavy Metal)</p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/Exp2-Sample-Midi-Pos1.wav"/> </td>
+        <td> <audio controls src="audio/Exp2-Sample-Midi-Neg1.wav"/> </td>
+        <td> <audio controls src="audio/Exp2-Sample-Midi-Neg2.wav"/> </td>
+    </tr>
+</table>
+<img src="images/exp2_results2.png" align="center"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Experiment-3">Experiment 3<a class="anchor-link" href="#Experiment-3">&#182;</a></h4><p>In this image we paired the same music dataset with images of celebrity faces from the CelebA dataset. Pop music was paired with smiling faces and Heavy Metal was paired with not smiling faces. There were approximately 100k images in each class so we did not repeat the images, and we extracted upto 50 monophonic sequences from each MIDI file. While the model only learned to predict mean faces, it did learn that Pop music should produce smiling faces and Heavy metal should produce neutral faces.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Results:</strong> Here, we report the results for Music To Image task for positive and negative classes.</p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/Exp3-Gen-Pos1.wav"/> </td>
+        <td> <audio controls src="audio/Exp3-Gen-Pos2.wav"/> </td>
+    </tr>
+</table>
+<img src="images/exp3_results1.png" align="center"></p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/Exp3-Gen-Neg1.wav"/> </td>
+        <td> <audio controls src="audio/Exp3-Gen-Neg2.wav"/> </td>
+    </tr>
+</table>
+<img src="images/exp3_results2.png" align="center"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Analysis-of-Results:">Analysis of Results:<a class="anchor-link" href="#Analysis-of-Results:">&#182;</a></h3><p>In these experiments, we use very short monophonic note sequences. This allowed us to use a smaller recurrent network which trained quickly and easily. But, due to their short length and monophonic nature, many note sequences belonging to different classes sound similar, or alike. This makes it difficult for the network to learn the differences between the two classes and causes music or images belonging to the wrong class to be generated. Using longer and polyphonic note sequences with larger recurrent networks might solve this problem.</p>
+<p>As seen in some of the results above, the network generates images that look very similar to images from the input set instead of novel images that maintain the class of the input. This is expected as the loss function we use enforces recreation of the input music or image. Using a loss function that enforces retention of the input class characteristic (like a discriminator network) might lead to better generated results.</p>
+<p>The metrics for comparison of results are purely qualitative. This causes the comparison between different methods and different architectures to be unreliable and subjective.</p>
+
+</div>
+</div>
 </div>
     </div>
   </div>
