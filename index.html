@@ -13139,14 +13139,21 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<style>.container { width:80% !important; }</style>
+<style>
+.container { width:80% !important; }
+div.prompt {
+    display: none;
+}
+</style>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook. This is demo summary text to check the look of Markdown in Jupyter Notebook.</p>
+<h2 id="Motivation-and-Problem-Statement">Motivation and Problem Statement<a class="anchor-link" href="#Motivation-and-Problem-Statement">&#182;</a></h2><p>&nbsp;
+Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
+<p>Translation from image to music has applications like automatic photo album / movie generation from a series of photos. While some existing products like Google Photos do this using pre-made musical sequences, we wanted to explore a generative approach. Translation from music to image has applications like automatic cover and companion art generation.</p>
 
 </div>
 </div>
@@ -13154,7 +13161,24 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Variational-Autoencoder-Approach">Variational Autoencoder Approach<a class="anchor-link" href="#Variational-Autoencoder-Approach">&#182;</a></h2>
+<p>Towards this goal, we present a variational autoencoder based network that can learn to translate an image to a musical sequence and a piece of music to image using a shared network. We use this network to perform three experiments and present their results.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>In this project, we explored the generation of music from image and image from music both through a shared network. For encoding and decoding music, we chose the <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae">MusicVAE</a> architecture. For encoding and decoding images, we used a Convolutional VAE. To test our architecture's ability to generate music from an image and image from a piece of music while retaining the characteristics of the input, we performed three experiments. Due to a lack of large enough MIDI dataset annotated with emotions, we decided to use genre of music as a substitute. In the first experiment, we paired heavy metal with negative images from <a href="https://www.ncbi.nlm.nih.gov/pubmed/21431997">GAPED</a> dataset and pop music with positive images from GAPED dataset. In the second experiment, we scaled up the data to use 3000 images per class taken from <a href="https://www.cs.rochester.edu/u/qyou/deepemotion/">DeepEmotion</a> dataset. In the third experiment, we paired the same two genres of music with images of celebrities expressing two different emotions (smiling/not smiling) from <a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html">CelebA</a> dataset. We also compared the results of the first experiment to a baseline model that only used fully connected layers instead of LSTMs, and found that our proposed architecture performed better than baseline.</p>
+<p>As an alternative to the VAE approach, we also experimented with a CycleGAN based approach. While we found that CycleGAN did not work well for the translation between the two domains, it generated some interesting results. [Other CycleGAN Summary]</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Variational-Autencoder-Approach">Variational Autencoder Approach<a class="anchor-link" href="#Variational-Autencoder-Approach">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -13162,23 +13186,35 @@ div#notebook {
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><img src="VAE_Architecture.png" align="center"/></p>
-
+<center>High Level Diagram of the Architecture</center>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Architecture Details: [WIP]</p>
+<h4 id="Architecture-Details:">Architecture Details:<a class="anchor-link" href="#Architecture-Details:">&#182;</a></h4><p>The music encoder/decoder is based on the <code>cat-mel_2bar_small</code> architecture from MusicVAE. The architectural details are as follows:</p>
 <ul>
-<li>LSTM Encoder: BiLSTM containing 1024 units.</li>
-<li>LSTM Decoder: Stacked LSTM with 2 LSTM layers with 512 units each.</li>
-<li>Convolutional Encoder: 2 Conv Layers with 32 and 64 3x3 filters resp, MaxPooling for downsampling.</li>
-<li>Convolutional Decoder: 2 Conv layers with 32 and 64 filters each with nearest neighbour upsampling and a final conv layer for output (sigmoid).</li>
-<li>All activations were LeakyReLUs for better gradient flow.</li>
-<li>Z Size was 512.</li>
-<li>Shared Network is 2 layers of 512 units each.</li>
+<li>The encoder is a Bidirectional LSTM containing 1024 cells.</li>
+<li>The decoder is a stacked LSTM with 2 layers with 512 units in each layer.</li>
 </ul>
+<p>The image encoder/decoder is a Convolutional VAE with the following architecture:</p>
+<p><img src="ImageVAE_Arch1.svg" align="center"/></p>
+<p>The resize operation uses nearest neighbour interpolation. The first dense layer in the decoder projects the <code>z_size</code> dimentional input to a <code>16 * 16 * 64</code> vector that is then reshaped to <code>(N, 16, 16, 64)</code> before feeding it to the convolutional layer. The final convolutional layer uses sigmoid activation to limit the output range to 0-1. All other layers use LeakyReLU.</p>
+<p>For other architecture parameters, we use the default values from <code>cat-mel_2bar_small</code>.</p>
+<div class="highlight"><pre><span></span><span class="n">HParams</span><span class="p">(</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">max_seq_len</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># 2 bars w/ 16 steps per bar</span>
+    <span class="n">z_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">enc_rnn_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1024</span><span class="p">],</span>
+    <span class="n">dec_rnn_size</span><span class="o">=</span><span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+    <span class="n">free_bits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">max_beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">beta_rate</span><span class="o">=</span><span class="mf">0.99999</span><span class="p">,</span>
+    <span class="n">sampling_schedule</span><span class="o">=</span><span class="s1">&#39;inverse_sigmoid&#39;</span><span class="p">,</span>
+    <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
 
 </div>
 </div>
