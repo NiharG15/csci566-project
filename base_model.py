@@ -373,7 +373,7 @@ class MusicVAE(object):
     beta = ((1.0 - tf.pow(hparams.beta_rate, tf.to_float(self.global_step)))
             * hparams.max_beta)
 
-    self.loss = tf.reduce_mean(r_loss) + recon_loss + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_div_img))
+    self.loss = tf.reduce_mean(r_loss) + recon_loss + beta * (tf.reduce_mean(kl_cost) + tf.reduce_mean(kl_cost_img))
     
     if gamma > 0:
         self.loss += gamma * reverse_cycle_loss
