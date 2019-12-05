@@ -13094,6 +13094,8 @@ div#notebook {
 &nbsp;
 &nbsp;</p>
 <center> Team Mario </center>
+&nbsp;
+<center> Nihar Gajare, Suzanti Manchandia, Nathaniel Potrepka, Sahitya Sridhar, Vivek Tiwari, Alex Yin </center>
 </div>
 </div>
 </div>
@@ -13122,7 +13124,7 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Motivation-and-Problem-Statement">Motivation and Problem Statement<a class="anchor-link" href="#Motivation-and-Problem-Statement">&#182;</a></h2><p>Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
+<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><p>Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
 <p>Translation from image to music has applications like automatic photo album / movie generation from a series of photos. While some existing products like Google Photos do this using pre-made musical sequences, we wanted to explore a generative approach. Translation from music to image has applications like automatic cover and companion art generation.</p>
 
 </div>
@@ -13131,7 +13133,7 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Towards this goal, we present a variational autoencoder based network that can learn to translate an image to a musical sequence and a piece of music to image using a shared network. We use this network to perform three experiments and present their results.</p>
+<p>Towards this goal, we present a variational autoencoder based network that can learn to translate an image to a musical sequence and a piece of music to image using a shared network. We use this network to perform three experiments and present their results. We also compare our network with a baseline to verify its qualitative performance and present an alternate approach based on the CycleGAN architecture.</p>
 
 </div>
 </div>
@@ -13140,7 +13142,8 @@ div.text_cell_render { /* Customize text cells */
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>In this project, we explored the generation of music from image and image from music both through a shared network. For encoding and decoding music, we chose the <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae">MusicVAE</a> architecture. For encoding and decoding images, we used a Convolutional VAE. To test our architecture's ability to generate music from an image and image from a piece of music while retaining the characteristics of the input, we performed three experiments. Due to a lack of large enough MIDI dataset annotated with emotions, we decided to use genre of music as a substitute. In the first experiment, we paired heavy metal with negative images from <a href="https://www.ncbi.nlm.nih.gov/pubmed/21431997">GAPED</a> dataset and pop music with positive images from GAPED dataset. In the second experiment, we scaled up the data to use 3000 images per class taken from <a href="https://www.cs.rochester.edu/u/qyou/deepemotion/">DeepEmotion</a> dataset. In the third experiment, we paired the same two genres of music with images of celebrities expressing two different emotions (smiling/not smiling) from <a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html">CelebA</a> dataset. We also compared the results of the first experiment to a baseline model that only used fully connected layers instead of LSTMs, and found that our proposed architecture performed better than baseline.</p>
-<p>As an alternative to the VAE approach, we also experimented with a CycleGAN based approach. While we found that CycleGAN did not work well for the translation between the two domains, it generated some interesting results. [Other CycleGAN Summary]</p>
+<p>In addition to our VAE approach, we looked at a second architecture, CycleGAN, that we hoped could be useful for producing higher resolution output. The two major additions that CycleGAN brings to the table are GAN Loss (Generator and Discriminator) along with Cycle Reconstruction Loss. While the architecture did not work well for the translation task, it worked well towards maintaining cycle consistency and producing high resolution images.</p>
+<p>We present the details of both our architectures and their results below.</p>
 
 </div>
 </div>
@@ -13475,6 +13478,51 @@ Your browser does not support the
 <h3 id="Analysis-of-Results:">Analysis of Results:<a class="anchor-link" href="#Analysis-of-Results:">&#182;</a></h3><p>In these experiments, we use very short monophonic note sequences. This allowed us to use a smaller recurrent network which trained quickly and easily. But, due to their short length and monophonic nature, many note sequences belonging to different classes sound similar, or alike. This makes it difficult for the network to learn the differences between the two classes and causes music or images belonging to the wrong class to be generated. Using longer and polyphonic note sequences with larger recurrent networks might solve this problem.</p>
 <p>As seen in some of the results above, the network generates images that look very similar to images from the input set instead of novel images that maintain the class of the input. This is expected as the loss function we use enforces recreation of the input music or image. Using a loss function that enforces retention of the input class characteristic (like a discriminator network) might lead to better generated results.</p>
 <p>The metrics for comparison of results are purely qualitative. This causes the comparison between different methods and different architectures to be unreliable and subjective.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Baseline-Network:">Baseline Network:<a class="anchor-link" href="#Baseline-Network:">&#182;</a></h2><p>To verify that our proposed architecture performs well, we compared it to a fully connected baseline network. We found that our approach beats the baseline in quality of results.</p>
+<p><strong>Architecture Details</strong>:</p>
+<p>The music and image encoder-decoders consisted of only consecutive fully connected layers. RELU activations were used after every layer. The final layer uses a linear activation function to produce the image/music output.</p>
+<p><img src="images/baseline_arch.png" align="center" width="350"></p>
+<p><strong>Training procedure:</strong>
+The network follows the same training procedure as our VAE approach. The sampled (music, image) pair passes through the network to generate a predicted image and music. We then minimize the loss between the predicted outputs and corresponding inputs (as described above). We use the Adadelta optimizer and train the model for 500 epochs with a batch size of 64.</p>
+<p><strong>Comparisons:</strong>
+The Variational Encoder approach clearly outperforms the Baseline model. The music generated by the baseline was not coherent as the sequential information is not captured by the model. In terms of the images, the absence of convolutional layers can be clearly seen. This is because the baseline is not able to extract relevant features that are uniquely descriptive of the content of the images. However, baseline models are still able to produce images and music that are discernable.</p>
+<p><strong>Results:</strong>
+<img src="images/baseline_results1.png" align="center"></p>
+<p><style> 
+.rendered_html td {
+    padding: 0 2em;
+}
+</style></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/pos_img_test.wav"/> </td>
+        <td> <audio controls src="audio/neg_img_test.wav"/> </td>
+    </tr>
+</table></p>
+<center> Image to Music </center>
+&nbsp;
+<table>
+    <tr>
+        <td> <audio controls src="audio/pos_music_test.wav"/> </td>
+        <td> <audio controls src="audio/neg_music_test.wav"/> </td>
+    </tr>
+</table>
+<img src="images/baseline_results2.png" align="center">
+&nbsp;
+<center> Music to Image </center>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 
 </div>
 </div>
