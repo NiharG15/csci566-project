@@ -13721,6 +13721,9 @@ The fake image go through Generator AB, producing cycle music.</p>
 </table></p>
 <center> MIDI to Image to MIDI </center><p>&nbsp;
 &nbsp;</p>
+<h4 id="Image-and-Audio">Image and Audio<a class="anchor-link" href="#Image-and-Audio">&#182;</a></h4><p>Next, we trained our model on image from the GAPED image dataset and audio samples from the PMEmo pop music dataset for 200 epochs (about 150,000 iterations). Discriminator Loss was scaled down by a factor of 2, although this decision was maybe not so wise in hindsight. We omit translation results, as they are nonsensical and abstract. However, what’s interesting is that, despite the wildly different spaces of input data (image and audio), the cycle reconstruction works well.</p>
+<p>Note that the same model trained on 256x256 data can be used to generate higher resolutions, such as 512x512. The effects of translation change at higher resolution, but cycle reconstruction remains effective.</p>
+<p>This brings up the idea of using CycleGAN to “artistically style” images (or audio), not by providing examples of output images (or audio), but by using an auxiliary dataset and cycle reconstruction to apply an effect to the image (or audio). Basically, instead of learning style transfer from examples, we use a reconstructive machine learning model (such as CycleGAN) and a totally random dataset to apply a totally new style to our image. Of course, the majority of what we see here is the result of artifacts from training, so we have CycleGAN to thank mostly, and not so much our data. The important thing to point out here is that our proposed “artistic styling” is applied through cycle reconstruction (both directions), not translation (one direction).</p>
 <p><table>
     <tr>
         <td> <audio controls src="audio/original_212.wav"/> </td>
@@ -13735,10 +13738,7 @@ The fake image go through Generator AB, producing cycle music.</p>
         <td> <audio controls src="audio/cycle_deltaheavy.wav"/> </td>
     </tr>
 </table></p>
-<center> Raw Audio to Image to Raw Audio </center><h4 id="Image-and-Audio">Image and Audio<a class="anchor-link" href="#Image-and-Audio">&#182;</a></h4><p>Next, we trained our model on image from the GAPED image dataset and audio samples from the PMEmo pop music dataset for 200 epochs (about 150,000 iterations). Discriminator Loss was scaled down by a factor of 2, although this decision was maybe not so wise in hindsight. We omit translation results, as they are nonsensical and abstract. However, what’s interesting is that, despite the wildly different spaces of input data (image and audio), the cycle reconstruction works well.</p>
-<p>Note that the same model trained on 256x256 data can be used to generate higher resolutions, such as 512x512. The effects of translation change at higher resolution, but cycle reconstruction remains effective.</p>
-<p>This brings up the idea of using CycleGAN to “artistically style” images (or audio), not by providing examples of output images (or audio), but by using an auxiliary dataset and cycle reconstruction to apply an effect to the image (or audio). Basically, instead of learning style transfer from examples, we use a reconstructive machine learning model (such as CycleGAN) and a totally random dataset to apply a totally new style to our image. Of course, the majority of what we see here is the result of artifacts from training, so we have CycleGAN to thank mostly, and not so much our data. The important thing to point out here is that our proposed “artistic styling” is applied through cycle reconstruction (both directions), not translation (one direction).</p>
-<p><br>
+<center> Audio to Image to Audio </center><p><br>
 <br></p>
 <p><img src="images/cgan_result5.png" align="center">
 &nbsp;</p>
