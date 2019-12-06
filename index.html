@@ -13230,7 +13230,7 @@ background: transparent;
 </ul>
 <p>The image encoder/decoder is a Convolutional VAE with the following architecture:</p>
 <p><img src="images/ImageVAE_Arch1.svg" align="center"/></p>
-<p>The resize operation uses nearest neighbour interpolation. The first dense layer in the decoder maps the <code>z_size</code> dimentional input to a <br> <code>16 * 16 * 64</code> vector that is then reshaped to <code>(N, 16, 16, 64)</code> before feeding it to the convolutional layer. The final convolutional layer uses sigmoid activation to limit the output range to 0-1. All other layers use LeakyReLU.</p>
+<p>The resize operation uses nearest neighbour interpolation. The first dense layer in the decoder maps the <code>z_size</code> dimentional input to a <code>16 * 16 * 64</code> vector that is then reshaped to <code>(N, 16, 16, 64)</code> before feeding it to the convolutional layer. The final convolutional layer uses sigmoid activation to limit the output range to 0-1. All other layers use LeakyReLU.</p>
 <p>For other architecture parameters, we use the default values from <code>cat-mel_2bar_small</code>.</p>
 
 </div>
