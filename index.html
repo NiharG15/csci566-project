@@ -13119,6 +13119,14 @@ div.text_cell_render { /* Customize text cells */
     padding-left: 2em;
     padding-right: 2em;
 }
+
+.rendered_html tbody tr:nth-child(odd) {
+    background: transparent;
+}
+
+.rendered_html tbody tr:hover {
+background: transparent;
+}
 </style>
 </div>
 </div>
@@ -13711,7 +13719,9 @@ The fake image go through Generator AB, producing cycle music.</p>
         <td> <img src="images/fake_212_first.png" align="center"> </td>
         <td> <audio controls src="audio/cycle_212.wav"/> </td>
     </tr>
-        <tr>
+</table></p>
+<p><table>
+    <tr>
         <td> <audio controls src="audio/original_deltaheavy.wav"/> </td>
         <td> <img src="images/fake_deltaheavy_first.png" align="center"> </td>
         <td> <audio controls src="audio/cycle_deltaheavy.wav"/> </td>
