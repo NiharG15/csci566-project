@@ -13157,7 +13157,7 @@ div.text_cell_render { /* Customize text cells */
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Table-of-Contents">Table of Contents<a class="anchor-link" href="#Table-of-Contents">&#182;</a></h2><hr>
 <ul>
-<li><a href="#Variational-Autencoder-Approach">Variational Autoencoder Approach</a><ul>
+<li><a href="#Variational-Autoencoder-Approach">Variational Autoencoder Approach</a><ul>
 <li><a href="#Architecture-Details:">Architecture Details</a></li>
 <li><a href="#Training-Procedure:">Training Procedure</a></li>
 <li><a href="#Music-Data-Preprocessing:">Music Data Preprocessing</a></li>
@@ -13184,9 +13184,12 @@ div.text_cell_render { /* Customize text cells */
 <li><a href="#Encoding-the-Data:">Encoding the Data</a></li>
 <li><a href="#cgan-arch-details">Architecture Details</a></li>
 <li><a href="#cgan-training">Training Procedure</a></li>
-<li><a href="#cgan-results">Results</a></li>
+<li><a href="#cgan-results">Results</a>
+<br>
+<br></li>
 </ul>
 </li>
+<li><a href="#Acknowledgements">Acknowledgements</a></li>
 </ul>
 
 </div>
@@ -13195,7 +13198,7 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Variational-Autencoder-Approach">Variational Autencoder Approach<a class="anchor-link" href="#Variational-Autencoder-Approach">&#182;</a></h1><hr>
+<h1 id="Variational-Autoencoder-Approach">Variational Autoencoder Approach<a class="anchor-link" href="#Variational-Autoencoder-Approach">&#182;</a></h1><hr>
 
 </div>
 </div>
@@ -13584,8 +13587,8 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Encoding-the-Data:">Encoding the Data:<a class="anchor-link" href="#Encoding-the-Data:">&#182;</a></h3><hr>
-<p>Image data is resized to either 128x128 or 256x256 and are padded to (RGB) 3 channels. To aid the network, values are rescaled to [-1, 1].</p>
-<p>MIDI data is quantized and converted to a black and white image. Black values (-1) represent no note, and white values (1) represent a note. The x-axis is time, and the y-axis is MIDI pitch. MIDI velocity is discarded during experiments but can easily be added as additional channels if necessary. Here is an image encoding for The Power of Goodbye by Madonna:</p>
+<p>Image data is resized to either 128x128 or 256x256 and is padded to (RGB) 3 channels. To aid the network, values are rescaled to [-1, 1].</p>
+<p>MIDI data is quantized and converted to a black and white image. Black values (-1) represent no note, and white values (1) represent a note. The x-axis is time, and the y-axis is MIDI pitch. MIDI velocity is discarded during experiments but can easily be added as an additional channel if necessary. Here is an image encoding for The Power of Goodbye by Madonna:</p>
 <p><img src="images/cgan_midi_example.png" align="center" width="30%"></p>
 <p>Audio data is resampled to 44.1kHz, reshaped to 128x128 (0.75 seconds) or 256x256 (1.5 seconds), and padded to 2 (stereo) channels. The values are in the range [-1, 1].</p>
 <p>We found that converting the audio to a spectrogram did not produce good results for cycle reconstruction in training, as the musical information was not evenly distributed and had low contrast. There is much more that could be done to convert the audio spectrogram into a more visually comprehensible image, including some of the preprocessing done in <a href="https://arxiv.org/pdf/1902.08710.pdf">this paper</a>, but for now, we use only raw audio data.</p>
@@ -13599,7 +13602,7 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Architecture-Details:-">Architecture Details: <a name="cgan-arch-details" /><a class="anchor-link" href="#Architecture-Details:-">&#182;</a></h3><hr>
 <p><img src="images/cyclegan_overview.png" align="center"></p>
-<p>The CycleGAN generator consists of three parts: an encoder, a transformer, and a decoder. The CycleGAN discriminator outputs a single channel representing real or fake. The network is entirely convolutional; there are no fully connected layers.</p>
+<p>The CycleGAN generator consists of three parts: an encoder, a transformer, and a decoder. The CycleGAN discriminator outputs a single filter with values representing real or fake. The network is entirely convolutional; there are no fully connected layers.</p>
 <h4 id="Encoder:">Encoder:<a class="anchor-link" href="#Encoder:">&#182;</a></h4><ul>
 <li>7x7 convolution, 64 filters, stride 1, padding 3</li>
 <li>Instance normalization</li>
@@ -13654,7 +13657,23 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Training-Procedure:-">Training Procedure: <a name="cgan-training" /><a class="anchor-link" href="#Training-Procedure:-">&#182;</a></h3><hr>
-<p>[WIP]</p>
+<p>Our model consists of four components:</p>
+<ul>
+<li>Generator AB, which converts images to music.</li>
+<li>Generator BA, which converts music to images.</li>
+<li>Discriminator A, which detects fake images.</li>
+<li>Discriminator B, which detects fake music.</li>
+</ul>
+<p>All weights are initialized from a normal distribution with zero mean and 0.02 standard deviation.</p>
+<p>Each iteration, we select a batch of images and a batch of music and do the following:
+The real images go through Generator AB, producing fake music.
+The real music goes through Generator BA, producing fake images.
+The fake music goes through Generator BA, producing cycle images.
+The fake image go through Generator AB, producing cycle music.</p>
+<p>Now that we have real, fake, and cycle data, we compute the losses! We alternate between training the generators and training the discriminators on each training iteration.</p>
+<p>When training the generators, we pass the fake images/music to Discriminator A/B respectively and compute the <strong>Generator Loss</strong> for each generator, which is the MSE loss between REAL=1 and the discriminator output for fake images/music. We also compute the <strong>Cycle Loss</strong>, which is the L1 loss between the real images/music and cycle images/music. Cycle Loss is scaled up by a factor of 10 to aid with convergence.</p>
+<p>When training the discriminators, we first swap our fake samples with samples from a buffer of 50 previously generated fake samples. Each swap happens with a 0.5 probability. (If our buffer does not have 50 samples yet, we simply insert our fake samples into the buffer.) Next, we compute the Discriminator Loss for each discriminator, which is the MSE loss between REAL=1 and the discriminator output for real images/music summed with the MSE loss between FAKE=0 and the discriminator output for fake images/music.</p>
+<p>Once we have all the losses, we sum them to obtain our total training loss. We use Adam optimization with 0.0002 for the learning rate, 0.5 for beta1, and 0.999 for beta2. Training is performed on 80% of the data, leaving 20% of the data for validation. The model is only saved when validation loss decreases.</p>
 
 </div>
 </div>
@@ -13704,6 +13723,15 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 &nbsp;</p>
 <center> Image to Audio to Image (512x512) </center><p><br>
 <br></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Acknowledgements">Acknowledgements<a class="anchor-link" href="#Acknowledgements">&#182;</a></h2><p>We would like to thank our mentor Shao-Hua Sun and Professor Joseph Lim for their guidance.</p>
+<p>This project is based on the open-source code released by <a href="https://magenta.tensorflow.org/music-vae">MusicVAE</a> authors.</p>
 
 </div>
 </div>
