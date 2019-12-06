@@ -13161,7 +13161,9 @@ div.text_cell_render { /* Customize text cells */
 <li><a href="#Experiments">Experiments</a><ul>
 <li><a href="#Experiment-1">Experiment 1</a></li>
 <li><a href="#Experiment-2">Experiment 2</a></li>
-<li><a href="#Experiment-3">Experiment 3</a></li>
+<li><a href="#Experiment-3">Experiment 3</a>
+<br>
+<br></li>
 </ul>
 </li>
 </ul>
@@ -13170,10 +13172,16 @@ div.text_cell_render { /* Customize text cells */
 <li><a href="#baseline-arch-details">Architecture Details</a></li>
 <li><a href="#baseline-train">Training Procedure</a></li>
 <li><a href="#baseline-comparisons">Comparisons</a></li>
-<li><a href="#baseline-results">Results</a></li>
+<li><a href="#baseline-results">Results</a>
+<br>
+<br></li>
 </ul>
 </li>
-<li><a href="">CycleGAN Approach</a></li>
+<li><a href="#CycleGAN-Approach">CycleGAN Approach</a><ul>
+<li><a href="#Encoding-the-Data:">Encoding the Data</a></li>
+<li><a href="#cgan-arch-details">Architecture Details</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -13554,6 +13562,75 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="CycleGAN-Approach">CycleGAN Approach<a class="anchor-link" href="#CycleGAN-Approach">&#182;</a></h2><p>To augment our VAE approach, we also looked at a second architecture, CycleGAN, with the objectives of processing higher resolution data and processing audio data. After encoding our music in an image format, our CycleGAN architecture trains a pair of generative adversarial networks, one for image to music and the other for music to image. The network minimizes six losses: two generator losses, two discriminator losses, and two cycle losses. While the vanilla CycleGAN approach initially seems to be a great candidate for translation, we soon discovered that the CycleGAN generator architecture was engineered specifically for image to image tasks. Consequently, our results for translation diverged from our original objective. Nonetheless, our results for cycle reconstruction were surprisingly excellent, and our results for translation were quite interesting. Therefore, we present some of them below.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Encoding-the-Data:">Encoding the Data:<a class="anchor-link" href="#Encoding-the-Data:">&#182;</a></h3><p>Image data is resized to either 128x128 or 256x256 and are padded to (RGB) 3 channels. To aid the network, values are rescaled to [-1, 1].</p>
+<p>MIDI data is quantized and converted to a black and white image. Black values (-1) represent no note, and white values (1) represent a note. The x-axis is time, and the y-axis is MIDI pitch. MIDI velocity is discarded during experiments but can easily be added as additional channels if necessary. Here is an image encoding for The Power of Goodbye by Madonna:</p>
+<p><img src="images/cgan_midi_example.png" align="center" width="30%"></p>
+<p>Audio data is resampled to 44.1kHz, reshaped to 128x128 (0.75 seconds) or 256x256 (1.5 seconds), and padded to 2 (stereo) channels. The values are in the range [-1, 1].</p>
+<p>We found that converting the audio to a spectrogram did not produce good results for cycle reconstruction in training, as the musical information was not evenly distributed and had low contrast. There is much more that could be done to convert the audio spectrogram into a more visually comprehensible image, including some of the preprocessing done in <a href="https://arxiv.org/pdf/1902.08710.pdf">this paper</a>, but for now, we use only raw audio data.</p>
+<p>We used the GAPED dataset for images. For MIDI, we used the Lakh MIDI dataset, and for audio, we used the <a href="https://dl.acm.org/citation.cfm?id=3206037">PMEmo</a> dataset.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Architecture-Details:-">Architecture Details: <a name="cgan-arch-details" /><a class="anchor-link" href="#Architecture-Details:-">&#182;</a></h3><p><img src="images/cyclegan_overview.png" align="center"></p>
+<p>The CycleGAN generator consists of three parts: an encoder, a transformer, and a decoder. The CycleGAN discriminator outputs a single channel representing real or fake. The network is entirely convolutional; there are no fully connected layers.</p>
+<h4 id="Encoder:">Encoder:<a class="anchor-link" href="#Encoder:">&#182;</a></h4><ul>
+<li>7x7 convolution, 64 filters, stride 1, padding 3</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+<li>3x3 convolution, 128 filters, stride 2, padding 1</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+<li>3x3 convolution, 256 filters, stride 2, padding 1</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+</ul>
+<h4 id="Transformer-(Residual-Blocks):">Transformer (Residual Blocks):<a class="anchor-link" href="#Transformer-(Residual-Blocks):">&#182;</a></h4><ul>
+<li>3x3 convolution, 256 filters, stride 1, padding 1</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+<li>3x3 convolution, 256 filters, stride 1, padding 1</li>
+<li>Instance normalization</li>
+</ul>
+<p>This block is repeated 9 times.</p>
+<p>The output of each residual block is summed with its input.</p>
+<h4 id="Decoder">Decoder<a class="anchor-link" href="#Decoder">&#182;</a></h4><ul>
+<li>3x3 convolution transpose, 128 filters, stride 2, padding 1</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+<li>3x3 convolution transpose, 64 filters, stride 2, padding 1</li>
+<li>Instance normalization</li>
+<li>ReLU</li>
+<li>7x7 convolution, output number of filters, stride 1, padding 3</li>
+<li>Instance normalization</li>
+<li>Tanh</li>
+</ul>
+<h4 id="Discriminator">Discriminator<a class="anchor-link" href="#Discriminator">&#182;</a></h4><ul>
+<li>4x4 convolution, 64 filters, stride 2, , padding (1, 2)</li>
+<li>Instance normalization</li>
+<li>LeakyReLU, alpha 0.2</li>
+<li>4x4 convolution, 128 filters, stride 2, padding (1, 2)</li>
+<li>Instance normalization</li>
+<li>LeakyReLU, alpha 0.2</li>
+<li>4x4 convolution, 256 filters, stride 2, padding (1, 2)</li>
+<li>Instance normalization</li>
+<li>LeakyReLU, alpha 0.2</li>
+<li>4x4 convolution, 512 filters, stride 1, padding (1, 2)</li>
+<li>Instance normalization</li>
+<li>LeakyReLU, alpha 0.2</li>
+<li>4x4 convolution, 1 filter, stride 1, padding (1, 2)</li>
+</ul>
 
 </div>
 </div>
