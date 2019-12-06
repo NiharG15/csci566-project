@@ -13704,40 +13704,48 @@ The fake image go through Generator AB, producing cycle music.</p>
 <center> Image to MIDI to Image </center><h4 id="Image-and-MIDI">Image and MIDI<a class="anchor-link" href="#Image-and-MIDI">&#182;</a></h4><p>We trained our model on images from the GAPED image dataset and MIDI sequences from the Lakh clean MIDI dataset for 200 epochs (about 150,000 iterations). MIDI Cycle Loss was scaled up by 100 instead of 10, and we used 6 residual blocks instead of 9. Translating from image to MIDI, we found our results to be more visually appealing than auditorily, likening itself to a style of art known as <a href="https://www.youtube.com/watch?v=tK1M676a0WY">MIDI art</a>. As for the cycle reconstruction from image to MIDI to image, the results are blurry and filled with artifacts. Translating from MIDI to image produced an abstract assortment of gridded colors, with each MIDI sequence producing about the same pattern with its own unique shape. Cycle reconstruction from MIDI to image to MIDI was surprisingly accurate. Some notes were held too long, while other notes were slightly misplaced or blended together, so despite good results, there is still room for improvement.</p>
 <p>&nbsp;
 &nbsp;</p>
-<p><img src="images/cgan_result3.png" align="center"></p>
+<center> Madonna - The Power of Goodbye </center>
+<img src="images/cgan_result3.png" align="center">
 <table>
     <tr>
         <td> <audio controls src="audio/original_madonna.wav"/> </td>
         <td> &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp; </td>
         <td> <audio controls src="audio/cycle_madonna.wav"/> </td>
     </tr>
-</table><p><img src="images/cgan_result4.png" align="center"></p>
-<p><table>
+</table>
+<br>
+<center> Scott Joplin - Magnetic Rag </center>
+<img src="images/cgan_result4.png" align="center">
+<table>
     <tr>
         <td> <audio controls src="audio/original_scott.wav"/> </td>
         <td> &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp; </td>
         <td> <audio controls src="audio/cycle_scott.wav"/> </td>
     </tr>
-</table></p>
+</table>
 <center> MIDI to Image to MIDI </center><p>&nbsp;
 &nbsp;</p>
 <h4 id="Image-and-Audio">Image and Audio<a class="anchor-link" href="#Image-and-Audio">&#182;</a></h4><p>Next, we trained our model on image from the GAPED image dataset and audio samples from the PMEmo pop music dataset for 200 epochs (about 150,000 iterations). Discriminator Loss was scaled down by a factor of 2, although this decision was maybe not so wise in hindsight. We omit translation results, as they are nonsensical and abstract. However, what’s interesting is that, despite the wildly different spaces of input data (image and audio), the cycle reconstruction works well.</p>
 <p>Note that the same model trained on 256x256 data can be used to generate higher resolutions, such as 512x512. The effects of translation change at higher resolution, but cycle reconstruction remains effective.</p>
 <p>This brings up the idea of using CycleGAN to “artistically style” images (or audio), not by providing examples of output images (or audio), but by using an auxiliary dataset and cycle reconstruction to apply an effect to the image (or audio). Basically, instead of learning style transfer from examples, we use a reconstructive machine learning model (such as CycleGAN) and a totally random dataset to apply a totally new style to our image. Of course, the majority of what we see here is the result of artifacts from training, so we have CycleGAN to thank mostly, and not so much our data. The important thing to point out here is that our proposed “artistic styling” is applied through cycle reconstruction (both directions), not translation (one direction).</p>
-<p><table>
+<p><br></p>
+<center> Demi Lovato - Body Say </center>
+<table>
     <tr>
         <td> <audio controls src="audio/original_212.wav"/> </td>
         <td> <img src="images/fake_212_first.png" align="center"> </td>
         <td> <audio controls src="audio/cycle_212.wav"/> </td>
     </tr>
-</table></p>
-<p><table>
+</table>
+<br>
+<center> Delta Heavy - Apollo </center>
+<table>
     <tr>
         <td> <audio controls src="audio/original_deltaheavy.wav"/> </td>
         <td> <img src="images/fake_deltaheavy_first.png" align="center"> </td>
         <td> <audio controls src="audio/cycle_deltaheavy.wav"/> </td>
     </tr>
-</table></p>
+</table>
 <center> Audio to Image to Audio </center><p><br>
 <br></p>
 <p><img src="images/cgan_result5.png" align="center">
