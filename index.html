@@ -13192,12 +13192,15 @@ background: transparent;
 <li><a href="#Encoding-the-Data:">Encoding the Data</a></li>
 <li><a href="#cgan-arch-details">Architecture Details</a></li>
 <li><a href="#cgan-training">Training Procedure</a></li>
-<li><a href="#cgan-results">Results</a>
+<li><a href="#cgan-results">Experiments</a>
 <br>
 <br></li>
 </ul>
 </li>
-<li><a href="#Acknowledgements">Acknowledgements</a></li>
+<li><a href="#Acknowledgements">Acknowledgements</a>
+<br>
+<br></li>
+<li><a href="#Source-Code">Source Code</a></li>
 </ul>
 
 </div>
@@ -13682,6 +13685,10 @@ The fake image go through Generator AB, producing cycle music.</p>
 <p>When training the generators, we pass the fake images/music to Discriminator A/B respectively and compute the <strong>Generator Loss</strong> for each generator, which is the MSE loss between REAL=1 and the discriminator output for fake images/music. We also compute the <strong>Cycle Loss</strong>, which is the L1 loss between the real images/music and cycle images/music. Cycle Loss is scaled up by a factor of 10 to aid with convergence.</p>
 <p>When training the discriminators, we first swap our fake samples with samples from a buffer of 50 previously generated fake samples. Each swap happens with a 0.5 probability. (If our buffer does not have 50 samples yet, we simply insert our fake samples into the buffer.) Next, we compute the Discriminator Loss for each discriminator, which is the MSE loss between REAL=1 and the discriminator output for real images/music summed with the MSE loss between FAKE=0 and the discriminator output for fake images/music.</p>
 <p>Once we have all the losses, we sum them to obtain our total training loss. We use Adam optimization with 0.0002 for the learning rate, 0.5 for beta1, and 0.999 for beta2. Training is performed on 80% of the data, leaving 20% of the data for validation. The model is only saved when validation loss decreases.</p>
+<h4 id="Lessons-from-Training-GANs">Lessons from Training GANs<a class="anchor-link" href="#Lessons-from-Training-GANs">&#182;</a></h4><p>When training our model, the biggest factors to consider was learning rate, loss scaling, size of dataset, size of each data sample, buffer size (or pool size), number of residual layers in the generator, and number of epochs trained.</p>
+<p>Learning rate acts like a global scale for loss, while each individual loss has its own scale. The scale of 10 for Cycle Loss was pretty good overall; the simple L1 loss was not too hard to learn. However, a good scale for Generator Loss and Discriminator Loss was really hard to figure out, since the generator was so much bigger than the discriminator. Since the generator was so powerful, it would actually learn better than the discriminator, and the loss would be much lower. However, decreasing the scale for the Generator Loss, say to 0.1, would cause the discriminator to overpower the generator. Having powerful supercomputers to run a hyperparameter search would greatly help our results, but alas, we have limited resources. We ended up leaving both values at 1 for most experiments. Decreasing the number of residual layers, though reducing the capacity of the generator is another way to get more balanced training.</p>
+<p>The pool size of 50 was good for our translation task. Increasing the pool size to the hundreds or thousands or to zero caused the model to perform more poorly.</p>
+<p>After processing, GAPED consists of 730 images, Lakh consists of 29968 sequences, and PMEmo consists of 15340 audio clips. Obviously, training on more images would be helpful, and perhaps more MIDI or audio would be helpful, too, since music is very complex. Training for more epochs would also improve results, and is easier when the size of each data sample is small. Overall, when it comes to data and computing, more is better.</p>
 
 </div>
 </div>
@@ -13689,12 +13696,13 @@ The fake image go through Generator AB, producing cycle music.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Results:--">Results: <a name="cgan-results"> </a><a class="anchor-link" href="#Results:--">&#182;</a></h3><hr>
+<h3 id="Experiments:--">Experiments: <a name="cgan-results"> </a><a class="anchor-link" href="#Experiments:--">&#182;</a></h3><hr>
 <p><img src="images/cgan_result1.png" align="center"></p>
 <center> <audio controls src="audio/fake_tree.wav" /> </center>
 <img src="images/cgan_result2.png" align="center">
 <center> <audio controls src="audio/fake_lena.wav" /> </center>
-<center> Image to MIDI to Image </center><p>&nbsp;
+<center> Image to MIDI to Image </center><h4 id="Image-and-MIDI">Image and MIDI<a class="anchor-link" href="#Image-and-MIDI">&#182;</a></h4><p>We trained our model on images from the GAPED image dataset and MIDI sequences from the Lakh clean MIDI dataset for 200 epochs (about 150,000 iterations). MIDI Cycle Loss was scaled up by 100 instead of 10, and we used 6 residual blocks instead of 9. Translating from image to MIDI, we found our results to be more visually appealing than auditorily, likening itself to a style of art known as <a href="https://www.youtube.com/watch?v=tK1M676a0WY">MIDI art</a>. As for the cycle reconstruction from image to MIDI to image, the results are blurry and filled with artifacts. Translating from MIDI to image produced an abstract assortment of gridded colors, with each MIDI sequence producing about the same pattern with its own unique shape. Cycle reconstruction from MIDI to image to MIDI was surprisingly accurate. Some notes were held too long, while other notes were slightly misplaced or blended together, so despite good results, there is still room for improvement.</p>
+<p>&nbsp;
 &nbsp;</p>
 <p><img src="images/cgan_result3.png" align="center"></p>
 <table>
@@ -13727,12 +13735,17 @@ The fake image go through Generator AB, producing cycle music.</p>
         <td> <audio controls src="audio/cycle_deltaheavy.wav"/> </td>
     </tr>
 </table></p>
-<center> Raw Audio to Image to Raw Audio </center><p><br>
+<center> Raw Audio to Image to Raw Audio </center><h4 id="Image-and-Audio">Image and Audio<a class="anchor-link" href="#Image-and-Audio">&#182;</a></h4><p>Next, we trained our model on image from the GAPED image dataset and audio samples from the PMEmo pop music dataset for 200 epochs (about 150,000 iterations). Discriminator Loss was scaled down by a factor of 2, although this decision was maybe not so wise in hindsight. We omit translation results, as they are nonsensical and abstract. However, what’s interesting is that, despite the wildly different spaces of input data (image and audio), the cycle reconstruction works well.</p>
+<p>Note that the same model trained on 256x256 data can be used to generate higher resolutions, such as 512x512. The effects of translation change at higher resolution, but cycle reconstruction remains effective.</p>
+<p>This brings up the idea of using CycleGAN to “artistically style” images (or audio), not by providing examples of output images (or audio), but by using an auxiliary dataset and cycle reconstruction to apply an effect to the image (or audio). Basically, instead of learning style transfer from examples, we use a reconstructive machine learning model (such as CycleGAN) and a totally random dataset to apply a totally new style to our image. Of course, the majority of what we see here is the result of artifacts from training, so we have CycleGAN to thank mostly, and not so much our data. The important thing to point out here is that our proposed “artistic styling” is applied through cycle reconstruction (both directions), not translation (one direction).</p>
+<p><br>
 <br></p>
 <p><img src="images/cgan_result5.png" align="center">
 &nbsp;</p>
 <center> Image to Audio to Image (512x512) </center><p><br>
 <br></p>
+<h4 id="Blurring-and-Impressionism">Blurring and Impressionism<a class="anchor-link" href="#Blurring-and-Impressionism">&#182;</a></h4><p>To augment our results from the VAE approach, we trained our CycleGAN model on 256x256 images and 256x256 blurred images for 278 epochs (about 200,000 iterations). Note that the images are not paired. The intention was to unblur the 64x64 images and produce high resolution content (256x256). This is not what happened, but the results are interesting nonetheless. The output image looks more like a painting than a photo, but perhaps with more training epochs and more training data, the output could get closer to being realistic.</p>
+<p><img src="images/cgan_result6.png" align="center"></p>
 
 </div>
 </div>
@@ -13742,6 +13755,15 @@ The fake image go through Generator AB, producing cycle music.</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Acknowledgements">Acknowledgements<a class="anchor-link" href="#Acknowledgements">&#182;</a></h2><p>We would like to thank Professor Joseph Lim and our mentor Shao-Hua Sun for their guidance.</p>
 <p>Parts of this project are based on the open-source code released by the <a href="https://magenta.tensorflow.org/music-vae">MusicVAE</a> authors. The CycleGAN implementation is based on <a href="https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix">this repository</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Source-Code">Source Code<a class="anchor-link" href="#Source-Code">&#182;</a></h2><p>VAE: <a href="https://github.com/NiharG15/csci566-project">https://github.com/NiharG15/csci566-project</a></p>
+<p>CycleGAN: <a href="https://github.com/nspotrepka/mario">https://github.com/nspotrepka/mario</a></p>
 
 </div>
 </div>
