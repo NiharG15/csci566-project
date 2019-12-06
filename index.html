@@ -13126,7 +13126,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><p>Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
+<h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><hr>
+<p>Image and Audio are two inherently different media, however both share a common characteristic: emotion. We wanted to explore the task of <strong>translating between the two media</strong>, while retaining some of the characteristics of the input.</p>
 <p>Translation from image to music has applications like automatic photo album / movie generation from a series of photos. While some existing products like Google Photos do this using pre-made musical sequences, we wanted to explore a generative approach. Translation from music to image has applications like automatic cover and companion art generation.</p>
 
 </div>
@@ -13143,7 +13144,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>In this project, we explored the generation of music from image and image from music both through a shared network. For encoding and decoding music, we chose the <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae">MusicVAE</a> architecture. For encoding and decoding images, we used a Convolutional VAE. To test our architecture's ability to generate music from an image and image from a piece of music while retaining the characteristics of the input, we performed three experiments. Due to a lack of large enough MIDI dataset annotated with emotions, we decided to use genre of music as a substitute. In the first experiment, we paired heavy metal with negative images from <a href="https://www.ncbi.nlm.nih.gov/pubmed/21431997">GAPED</a> dataset and pop music with positive images from GAPED dataset. In the second experiment, we scaled up the data to use 3000 images per class taken from <a href="https://www.cs.rochester.edu/u/qyou/deepemotion/">DeepEmotion</a> dataset. In the third experiment, we paired the same two genres of music with images of celebrities expressing two different emotions (smiling/not smiling) from <a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html">CelebA</a> dataset. We also compared the results of the first experiment to a baseline model that only used fully connected layers instead of LSTMs, and found that our proposed architecture performed better than baseline.</p>
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><hr>
+<p>In this project, we explored the generation of music from image and image from music both through a shared network. For encoding and decoding music, we chose the <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/music_vae">MusicVAE</a> architecture. For encoding and decoding images, we used a Convolutional VAE. To test our architecture's ability to generate music from an image and image from a piece of music while retaining the characteristics of the input, we performed three experiments. Due to a lack of large enough MIDI dataset annotated with emotions, we decided to use genre of music as a substitute. In the first experiment, we paired heavy metal with negative images from <a href="https://www.ncbi.nlm.nih.gov/pubmed/21431997">GAPED</a> dataset and pop music with positive images from GAPED dataset. In the second experiment, we scaled up the data to use 3000 images per class taken from <a href="https://www.cs.rochester.edu/u/qyou/deepemotion/">DeepEmotion</a> dataset. In the third experiment, we paired the same two genres of music with images of celebrities expressing two different emotions (smiling/not smiling) from <a href="http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html">CelebA</a> dataset. We also compared the results of the first experiment to a baseline model that only used fully connected layers instead of LSTMs, and found that our proposed architecture performed better than baseline.</p>
 <p>In addition to our VAE approach, we looked at a second architecture, CycleGAN, that we hoped could be useful for producing higher resolution output. The two major additions that CycleGAN brings to the table are GAN Loss (Generator and Discriminator) along with Cycle Reconstruction Loss. While the architecture did not work well for the translation task, it worked well towards maintaining cycle consistency and producing high resolution images.</p>
 <p>We present the details of both our architectures and their results below.</p>
 
@@ -13153,7 +13155,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Table-of-Contents">Table of Contents<a class="anchor-link" href="#Table-of-Contents">&#182;</a></h2><ul>
+<h2 id="Table-of-Contents">Table of Contents<a class="anchor-link" href="#Table-of-Contents">&#182;</a></h2><hr>
+<ul>
 <li><a href="#Variational-Autencoder-Approach">Variational Autoencoder Approach</a><ul>
 <li><a href="#Architecture-Details:">Architecture Details</a></li>
 <li><a href="#Training-Procedure:">Training Procedure</a></li>
@@ -13180,6 +13183,8 @@ div.text_cell_render { /* Customize text cells */
 <li><a href="#CycleGAN-Approach">CycleGAN Approach</a><ul>
 <li><a href="#Encoding-the-Data:">Encoding the Data</a></li>
 <li><a href="#cgan-arch-details">Architecture Details</a></li>
+<li><a href="#cgan-training">Training Procedure</a></li>
+<li><a href="#cgan-results">Results</a></li>
 </ul>
 </li>
 </ul>
@@ -13190,7 +13195,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Variational-Autencoder-Approach">Variational Autencoder Approach<a class="anchor-link" href="#Variational-Autencoder-Approach">&#182;</a></h2>
+<h1 id="Variational-Autencoder-Approach">Variational Autencoder Approach<a class="anchor-link" href="#Variational-Autencoder-Approach">&#182;</a></h1><hr>
+
 </div>
 </div>
 </div>
@@ -13205,7 +13211,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Architecture-Details:">Architecture Details:<a class="anchor-link" href="#Architecture-Details:">&#182;</a></h3><p>The music encoder/decoder is based on the <code>cat-mel_2bar_small</code> architecture from MusicVAE. The architectural details are as follows:</p>
+<h3 id="Architecture-Details:">Architecture Details:<a class="anchor-link" href="#Architecture-Details:">&#182;</a></h3><hr>
+<p>The music encoder/decoder is based on the <code>cat-mel_2bar_small</code> architecture from MusicVAE. The architectural details are as follows:</p>
 <ul>
 <li>The encoder is a Bidirectional LSTM containing 1024 cells.</li>
 <li>The decoder is a stacked LSTM with 2 layers with 512 units in each layer.</li>
@@ -13240,7 +13247,8 @@ div.text_cell_render { /* Customize text cells */
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Training-Procedure:">Training Procedure:<a class="anchor-link" href="#Training-Procedure:">&#182;</a></h3><p>We sample a <code>(music, image)</code> pair that belongs to the same class. We then pass the music through the LSTM encoder, sample $Z_{music}$ from the resulting distribution. The latent code $Z_{music}$ is then passed through the shared network to transform it into a shared latent space. This latent code is then sent to the Convolutional Decoder to generate an image <code>image_pred</code>.
+<h3 id="Training-Procedure:">Training Procedure:<a class="anchor-link" href="#Training-Procedure:">&#182;</a></h3><hr>
+<p>We sample a <code>(music, image)</code> pair that belongs to the same class. We then pass the music through the LSTM encoder, sample $Z_{music}$ from the resulting distribution. The latent code $Z_{music}$ is then passed through the shared network to transform it into a shared latent space. This latent code is then sent to the Convolutional Decoder to generate an image <code>image_pred</code>.
 The input <code>image</code> follows similar path through the Convolutional encoder, shared network and LSTM decoder to generate <code>music_pred</code>.</p>
 <p>We minimize the following losses:</p>
 <ul>
@@ -13256,7 +13264,8 @@ The input <code>image</code> follows similar path through the Convolutional enco
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Music-Data-Preprocessing:">Music Data Preprocessing:<a class="anchor-link" href="#Music-Data-Preprocessing:">&#182;</a></h3><p>We use the data preprocessing from MusicVAE. It converts each MIDI file into multiple <code>(32, 90)</code> tensors where 32 corresponds to two 16-bar melodies and 90 corresponds to the MIDI pitches. The data is one-hot encoded. The data converter handles polyphonic MIDI files by taking the note with the highest pitch to produce monophonic sequences that are fed to the network. The sequences extracted from the original MIDI file belong to piano, chromatic percussion, organ and guitar programs.</p>
+<h3 id="Music-Data-Preprocessing:">Music Data Preprocessing:<a class="anchor-link" href="#Music-Data-Preprocessing:">&#182;</a></h3><hr>
+<p>We use the data preprocessing from MusicVAE. It converts each MIDI file into multiple <code>(32, 90)</code> tensors where 32 corresponds to two 16-bar melodies and 90 corresponds to the MIDI pitches. The data is one-hot encoded. The data converter handles polyphonic MIDI files by taking the note with the highest pitch to produce monophonic sequences that are fed to the network. The sequences extracted from the original MIDI file belong to piano, chromatic percussion, organ and guitar programs.</p>
 <p>Here is an example MIDI file before and after preprocessing. Multiple possible sequences are extracted from each MIDI file.</p>
 
 </div>
@@ -13293,7 +13302,8 @@ Your browser does not support the
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Experiments">Experiments<a class="anchor-link" href="#Experiments">&#182;</a></h3>
+<h3 id="Experiments">Experiments<a class="anchor-link" href="#Experiments">&#182;</a></h3><hr>
+
 </div>
 </div>
 </div>
@@ -13514,7 +13524,8 @@ Your browser does not support the
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Analysis-of-Results:">Analysis of Results:<a class="anchor-link" href="#Analysis-of-Results:">&#182;</a></h3><p>In these experiments, we use very short monophonic note sequences. This allowed us to use a smaller recurrent network which trained quickly and easily. But, due to their short length and monophonic nature, many note sequences belonging to different classes sound similar, or alike. This makes it difficult for the network to learn the differences between the two classes and causes music or images belonging to the wrong class to be generated. Using longer and polyphonic note sequences with larger recurrent networks might solve this problem.</p>
+<h3 id="Analysis-of-Results:">Analysis of Results:<a class="anchor-link" href="#Analysis-of-Results:">&#182;</a></h3><hr>
+<p>In these experiments, we use very short monophonic note sequences. This allowed us to use a smaller recurrent network which trained quickly and easily. But, due to their short length and monophonic nature, many note sequences belonging to different classes sound similar, or alike. This makes it difficult for the network to learn the differences between the two classes and causes music or images belonging to the wrong class to be generated. Using longer and polyphonic note sequences with larger recurrent networks might solve this problem.</p>
 <p>As seen in some of the results above, the network generates images that look very similar to images from the input set instead of novel images that maintain the class of the input. This is expected as the loss function we use enforces recreation of the input music or image. Using a loss function that enforces retention of the input class characteristic (like a discriminator network) might lead to better generated results.</p>
 <p>The metrics for comparison of results are purely qualitative. This causes the comparison between different methods and different architectures to be unreliable and subjective.</p>
 
@@ -13524,7 +13535,8 @@ Your browser does not support the
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Baseline-Network:">Baseline Network:<a class="anchor-link" href="#Baseline-Network:">&#182;</a></h2><p>To verify that our proposed architecture performs well, we compared it to a fully connected baseline network. We found that our approach beats the baseline in quality of results.</p>
+<h1 id="Baseline-Network:">Baseline Network:<a class="anchor-link" href="#Baseline-Network:">&#182;</a></h1><hr>
+<p>To verify that our proposed architecture performs well, we compared it to a fully connected baseline network. We found that our approach beats the baseline in quality of results.</p>
 <p><strong>Architecture Details</strong>: <a name="baseline-arch-details"></a></p>
 <p>The music and image encoder-decoders consisted of only consecutive fully connected layers. RELU activations were used after every layer. The final layer uses a linear activation function to produce the image/music output.</p>
 <p><img src="images/baseline_arch.png" align="center" width="350"></p>
@@ -13562,7 +13574,8 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="CycleGAN-Approach">CycleGAN Approach<a class="anchor-link" href="#CycleGAN-Approach">&#182;</a></h2><p>To augment our VAE approach, we also looked at a second architecture, CycleGAN, with the objectives of processing higher resolution data and processing audio data. After encoding our music in an image format, our CycleGAN architecture trains a pair of generative adversarial networks, one for image to music and the other for music to image. The network minimizes six losses: two generator losses, two discriminator losses, and two cycle losses. While the vanilla CycleGAN approach initially seems to be a great candidate for translation, we soon discovered that the CycleGAN generator architecture was engineered specifically for image to image tasks. Consequently, our results for translation diverged from our original objective. Nonetheless, our results for cycle reconstruction were surprisingly excellent, and our results for translation were quite interesting. Therefore, we present some of them below.</p>
+<h1 id="CycleGAN-Approach">CycleGAN Approach<a class="anchor-link" href="#CycleGAN-Approach">&#182;</a></h1><hr>
+<p>To augment our VAE approach, we also looked at a second architecture, CycleGAN, with the objectives of processing higher resolution data and processing audio data. After encoding our music in an image format, our CycleGAN architecture trains a pair of generative adversarial networks, one for image to music and the other for music to image. The network minimizes six losses: two generator losses, two discriminator losses, and two cycle losses. While the vanilla CycleGAN approach initially seems to be a great candidate for translation, we soon discovered that the CycleGAN generator architecture was engineered specifically for image to image tasks. Consequently, our results for translation diverged from our original objective. Nonetheless, our results for cycle reconstruction were surprisingly excellent, and our results for translation were quite interesting. Therefore, we present some of them below.</p>
 
 </div>
 </div>
@@ -13570,7 +13583,8 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Encoding-the-Data:">Encoding the Data:<a class="anchor-link" href="#Encoding-the-Data:">&#182;</a></h3><p>Image data is resized to either 128x128 or 256x256 and are padded to (RGB) 3 channels. To aid the network, values are rescaled to [-1, 1].</p>
+<h3 id="Encoding-the-Data:">Encoding the Data:<a class="anchor-link" href="#Encoding-the-Data:">&#182;</a></h3><hr>
+<p>Image data is resized to either 128x128 or 256x256 and are padded to (RGB) 3 channels. To aid the network, values are rescaled to [-1, 1].</p>
 <p>MIDI data is quantized and converted to a black and white image. Black values (-1) represent no note, and white values (1) represent a note. The x-axis is time, and the y-axis is MIDI pitch. MIDI velocity is discarded during experiments but can easily be added as additional channels if necessary. Here is an image encoding for The Power of Goodbye by Madonna:</p>
 <p><img src="images/cgan_midi_example.png" align="center" width="30%"></p>
 <p>Audio data is resampled to 44.1kHz, reshaped to 128x128 (0.75 seconds) or 256x256 (1.5 seconds), and padded to 2 (stereo) channels. The values are in the range [-1, 1].</p>
@@ -13583,7 +13597,8 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Architecture-Details:-">Architecture Details: <a name="cgan-arch-details" /><a class="anchor-link" href="#Architecture-Details:-">&#182;</a></h3><p><img src="images/cyclegan_overview.png" align="center"></p>
+<h3 id="Architecture-Details:-">Architecture Details: <a name="cgan-arch-details" /><a class="anchor-link" href="#Architecture-Details:-">&#182;</a></h3><hr>
+<p><img src="images/cyclegan_overview.png" align="center"></p>
 <p>The CycleGAN generator consists of three parts: an encoder, a transformer, and a decoder. The CycleGAN discriminator outputs a single channel representing real or fake. The network is entirely convolutional; there are no fully connected layers.</p>
 <h4 id="Encoder:">Encoder:<a class="anchor-link" href="#Encoder:">&#182;</a></h4><ul>
 <li>7x7 convolution, 64 filters, stride 1, padding 3</li>
@@ -13631,6 +13646,64 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <li>LeakyReLU, alpha 0.2</li>
 <li>4x4 convolution, 1 filter, stride 1, padding (1, 2)</li>
 </ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Training-Procedure:-">Training Procedure: <a name="cgan-training" /><a class="anchor-link" href="#Training-Procedure:-">&#182;</a></h3><hr>
+<p>[WIP]</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Results:--">Results: <a name="cgan-results"> </a><a class="anchor-link" href="#Results:--">&#182;</a></h3><hr>
+<p><img src="images/cgan_result1.png" align="center"></p>
+<center> <audio controls src="audio/fake_tree.wav" /> </center>
+<img src="images/cgan_result2.png" align="center">
+<center> <audio controls src="audio/fake_lena.wav" /> </center>
+<center> Image to MIDI to Image </center><p>&nbsp;
+&nbsp;</p>
+<p><img src="images/cgan_result3.png" align="center"></p>
+<table>
+    <tr>
+        <td> <audio controls src="audio/original_madonna.wav"/> </td>
+        <td> &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp; </td>
+        <td> <audio controls src="audio/cycle_madonna.wav"/> </td>
+    </tr>
+</table><p><img src="images/cgan_result4.png" align="center"></p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/original_scott.wav"/> </td>
+        <td> &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;  &nbsp; </td>
+        <td> <audio controls src="audio/cycle_scott.wav"/> </td>
+    </tr>
+</table></p>
+<center> MIDI to Image to MIDI </center><p>&nbsp;
+&nbsp;</p>
+<p><table>
+    <tr>
+        <td> <audio controls src="audio/original_212.wav"/> </td>
+        <td> <img src="images/fake_212_first.png" align="center"> </td>
+        <td> <audio controls src="audio/cycle_212.wav"/> </td>
+    </tr>
+        <tr>
+        <td> <audio controls src="audio/original_deltaheavy.wav"/> </td>
+        <td> <img src="images/fake_deltaheavy_first.png" align="center"> </td>
+        <td> <audio controls src="audio/cycle_deltaheavy.wav"/> </td>
+    </tr>
+</table></p>
+<center> Raw Audio to Image to Raw Audio </center><p><br>
+<br></p>
+<p><img src="images/cgan_result5.png" align="center">
+&nbsp;</p>
+<center> Image to Audio to Image (512x512) </center><p><br>
+<br></p>
 
 </div>
 </div>
