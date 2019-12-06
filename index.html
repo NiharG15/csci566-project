@@ -13675,7 +13675,7 @@ The Variational Encoder approach clearly outperforms the Baseline model. The mus
 <li>Discriminator A, which detects fake images.</li>
 <li>Discriminator B, which detects fake music.</li>
 </ul>
-<p>All weights are initialized from a normal distribution with zero mean and 0.02 standard deviation.</p>
+<p>All weights are initialized from a normal distribution with a mean of zero and standard deviation 0.02.</p>
 <p>Each iteration, we select a batch of images and a batch of music and do the following:
 The real images go through Generator AB, producing fake music.
 The real music goes through Generator BA, producing fake images.
@@ -13752,7 +13752,7 @@ The fake image go through Generator AB, producing cycle music.</p>
 &nbsp;</p>
 <center> Image to Audio to Image (512x512) </center><p><br>
 <br></p>
-<h4 id="Blurring-and-Impressionism">Blurring and Impressionism<a class="anchor-link" href="#Blurring-and-Impressionism">&#182;</a></h4><p>To augment our results from the VAE approach, we trained our CycleGAN model on 256x256 images and 256x256 blurred images for 278 epochs (about 200,000 iterations). Note that the images are not paired. The intention was to unblur the 64x64 images and produce high resolution content (256x256). This is not what happened, but the results are interesting nonetheless. The output image looks more like a painting than a photo, but perhaps with more training epochs and more training data, the output could get closer to being realistic.</p>
+<h4 id="Blurring-and-Impressionism">Blurring and Impressionism<a class="anchor-link" href="#Blurring-and-Impressionism">&#182;</a></h4><p>To augment our results from the VAE approach, we trained our CycleGAN model on 256x256 images and 256x256 blurred images for 278 epochs (about 200,000 iterations). Note that the images are not paired. The blurring was performed by downsampling the images to 64x64 and then upsampling them back to 256x256 with linear interpolation. Our original intention was to unblur images produced by our VAE and produce high resolution content (256x256). This is not what happened, but the results are interesting nonetheless. The output image looks more like a painting than a photo, but perhaps with more training epochs and more training data, the output could get closer to being realistic.</p>
 <p><img src="images/cgan_result6.png" align="center"></p>
 
 </div>
